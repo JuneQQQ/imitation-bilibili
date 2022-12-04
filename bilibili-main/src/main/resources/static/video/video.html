@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link type="text/css" rel="stylesheet" href="ckplayer/css/ckplayer.css"/>
+    <script type="text/javascript" src="ckplayer/js/ckplayer.js" charset="UTF-8"></script>
+    <div class="video" style="width: 600px;height: 400px;">播放器容器</div>
+    <script type="text/javascript">
+        //定义一个变量：videoObject，用来做为视频初始化配置
+        var videoObject = {
+            container: '.video', //“#”代表容器的ID，“.”或“”代表容器的class
+            video: 'http://localhost:15005/video-slices?bucket=video&size=95298714' +
+                '&objectName=2f957d21533febecdbdd932a1b24c921-一周刷爆LeetCode，算法大神左神（左程云）耗时100天打造算法与数据结构基础到高级全家桶教程，直击BTAJ等一线大厂必问算法面试题真题详解 - 021 - 19.中级提升班-2.mp4'//视频地址
+        };
+        var player = new ckplayer(videoObject);//初始化播放器
+    </script>
+</head>
+<body>
+
+</body>
+</html>

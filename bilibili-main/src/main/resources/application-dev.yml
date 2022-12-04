@@ -1,0 +1,84 @@
+server:
+  port: 15005
+spring:
+  application:
+    name: bilibili-api
+  datasource:
+    url: jdbc:mysql://124.223.99.166:3306/imitation-bilibili?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: L200107208017./@
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    hikari:
+      connection-timeout: 10000
+      validation-timeout: 3000
+      idle-timeout: 60000
+      login-timeout: 5
+      max-lifetime: 60000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      read-only: false
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 1GB
+  redis:
+    cluster:
+      nodes:
+        - 124.222.22.217:6379
+        - 124.223.99.166:6379
+        - 124.221.154.235:6379
+      max-redirects: 3
+    password: L200107208017@./
+
+baidu:
+  develop:
+    auth:
+      url: https://aip.baidubce.com/oauth/2.0/token
+    clientId: sbjRmx1aqUBE1FRicpKfh4M1
+    clientSecret: 7T6E3sajEAqkA38klRVGaXusNYB0QbZC
+    splitBody:
+      url: https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg
+
+elasticsearch:
+  host: 120.48.78.44
+  port: 9200
+  username: elastic
+  password: 111111
+
+thread:
+  pool:
+    core-size: 20
+    keep-alive-time: 60
+
+
+minio:
+  endpoint: http://124.222.22.217:9000 # Minio服务所在地址
+  accessKey: jey5fGaOYDCg6iPB # 访问的key
+  secretKey: snJFuPAlLuJ8Mu9n9gRaytYV3V87WucK # 访问的秘钥
+  #  defaultBucket: default
+  downloadUri: http://124.222.22.217:9000
+  path: http://124.222.22.217:9000
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:15006/eureka/
+#  instance:
+#    instanceId: ${spring.cloud.client.ip-address}:${server.port}
+#    prefer-ip-address: true
+
+logging:
+  level:
+    com.juneqqq: DEBUG
+
+rocketmq:
+  name:
+    server:
+      address: 124.222.22.217:9876
+
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml   # 指明mapper xml文件位置，不配报错！

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>ckplayer</title>
+		<link type="text/css" rel="stylesheet" href="ckplayer/css/ckplayer.css" />
+		<!--
+			如果需要使用其它语言，请在此处引入相应的js,比如:<script type="text/javascript" src="ckplayer/language/en.js" charset="UTF-8"></script>
+		-->
+		<script type="text/javascript" src="ckplayer/js/ckplayer.min.js" charset="UTF-8"></script>
+	</head>
+	<body>
+		
+		<div class="video" style="width: 100%; height: 500px;max-width: 800px;">播放容器</div>
+		<script>
+			//调用开始
+			var videoObject = {
+				container: '.video', //视频容器
+				poster:'video/poster.png',//封面图片
+				video:'video/lc.mp4'//视频地址
+			};
+			var player=new ckplayer(videoObject)//调用播放器并赋值给变量player
+			/*
+			 * ===============================================================================================
+			 * 以上代码已完成调用演示，下方的代码是演示监听动作和外部控制的部分
+			 * ===============================================================================================
+			 * ===============================================================================================
+			 */
+			player.play(function(){
+				document.getElementById('state').innerHTML='监听到播放';
+			});
+			player.pause(function(){
+				document.getElementById('state').innerHTML='监听到暂停';
+			});
+			player.volume(function(vol){
+				document.getElementById('state').innerHTML='监听到音量改变：'+vol;
+			});
+			player.muted(function(b){
+				document.getElementById('state2').innerHTML='监听到静音状态：'+b;
+			});
+			player.full(function(b){
+				document.getElementById('state').innerHTML='监听到全屏状态：'+b;
+			});
+			player.ended(function(){
+				document.getElementById('state').innerHTML='监听到播放结束';
+			});
+		</script>
+		<p>官网：<a href="https://www.ckplayer.com" target="_blank">www.ckplayer.com</a></p>
+		<p>手册：<a href="https://www.ckplayer.com/manual/" target="_blank">www.ckplayer.com/manual/</a></p>
+		<p>社区：<a href="https://bbs.ckplayer.com/" target="_blank">bbs.ckplayer.com</a></p>
+		<p>全功能演示：<a href="https://www.ckplayer.com/demo.html" target="_blank">www.ckplayer.com/demo.html</a></p>
+		<p>控制示例：</p>
+		<p>
+			<button type="button" onclick="player.play()" >播放</button>
+			<button type="button" onclick="player.pause()" >暂停</button>
+			<button type="button" onclick="player.seek(20)" >跳转</button>
+			<button type="button" onclick="player.volume(0.6)">修改音量</button>
+			<button type="button" onclick="player.muted()">静音</button>
+			<button type="button" onclick="player.exitMuted()">恢复音量</button>
+			<button type="button" onclick="player.full()">全屏</button>
+			<button type="button" onclick="player.webFull()">页面全屏</button>
+			<button type="button" onclick="player.theatre()">剧场模式</button>
+			<button type="button" onclick="player.exitTheatre()">退出剧场模式</button>
+		</p>
+		<p id="state"></p>
+		<p id="state2"></p>
+	</body>
+</html>
