@@ -1,36 +1,44 @@
 server:
   port: 15005
+
 spring:
   application:
-    name: bilibili-api
+    name: bilibili-main
   datasource:
     url: jdbc:mysql://124.223.99.166:3306/imitation-bilibili?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: L200107208017./@
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-    hikari:
-      connection-timeout: 10000
-      validation-timeout: 3000
-      idle-timeout: 60000
-      login-timeout: 5
-      max-lifetime: 60000
-      maximum-pool-size: 10
-      minimum-idle: 5
-      read-only: false
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 6000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 30000
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      enable: on
   servlet:
     multipart:
       max-file-size: 500MB
       max-request-size: 1GB
-  redis:
-    cluster:
-      nodes:
-        - 124.222.22.217:6379
-        - 124.223.99.166:6379
-        - 124.221.154.235:6379
-      max-redirects: 3
-    password: L200107208017@./
-
+  elasticsearch:
+    uris:
+      - http://120.48.67.55:9200
+    username: elastic
+    password: 111111
+  data:
+    redis:
+      cluster:
+        nodes:
+          - 124.222.22.217:6379
+          - 124.223.99.166:6379
+          - 124.221.154.235:6379
+        max-redirects: 3
+      password: L200107208017@./
 baidu:
   develop:
     auth:
@@ -40,18 +48,6 @@ baidu:
     splitBody:
       url: https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg
 
-elasticsearch:
-  host: 120.48.78.44
-  port: 9200
-  username: elastic
-  password: 111111
-
-thread:
-  pool:
-    core-size: 20
-    keep-alive-time: 60
-
-
 minio:
   endpoint: http://124.222.22.217:9000 # Minio服务所在地址
   accessKey: jey5fGaOYDCg6iPB # 访问的key
@@ -60,25 +56,29 @@ minio:
   downloadUri: http://124.222.22.217:9000
   path: http://124.222.22.217:9000
 
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:15006/eureka/
-#  instance:
-#    instanceId: ${spring.cloud.client.ip-address}:${server.port}
-#    prefer-ip-address: true
-
 logging:
   level:
-    com.juneqqq: DEBUG
+    io.juneqqq: DEBUG
 
 rocketmq:
   name:
     server:
       address: 124.222.22.217:9876
 
+# XXL-JOB 配置
+xxl:
+  job:
+    admin:
+      ### 调度中心部署根地址 [选填]：如调度中心集群部署存在多个地址则用逗号分隔。执行器将会使用该地址进行"执行器心跳注册"和"任务结果回调"；为空则关闭自动注册；
+      addresses: http://127.0.0.1:8989/xxl-job-admin
+    executor:
+      ### 执行器AppName [选填]：执行器心跳注册分组依据；为空则关闭自动注册
+      appname: xxl-job-executor-bilibili
+      ### 执行器运行日志文件存储磁盘路径 [选填] ：需要对该路径拥有读写权限；为空则使用默认路径；
+      logpath: logs/xxl-job/jobhandler
+    accessToken: juneqqq
 
-mybatis-plus:
-  mapper-locations: classpath:mapper/*.xml
-mybatis:
-  mapper-locations: classpath*:mapper/**/*.xml   # 指明mapper xml文件位置，不配报错！
+service-thread-pool:
+  core-size: 100
+  max-size: 100
+  keep-alive-time: 60

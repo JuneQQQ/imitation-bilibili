@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.juneqqq.dao.mapper.FileInfoMapper">
+
+    <insert id="addFile" parameterType="io.juneqqq.dao.entity.FileInfo">
+        insert into
+            t_file_info(
+                url,
+                `suffix`,
+                md5,
+                createTime
+            )value(
+                #{url},
+                #{suffix},
+                #{md5},
+                #{createTime}
+            )
+    </insert>
+
+    <select id="getFileByMD5" parameterType="java.lang.String" resultType="io.juneqqq.dao.entity.FileInfo">
+        select
+            *
+        from
+            t_file_info
+        where
+            md5 = #{md5}
+    </select>
+
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.juneqqq.dao.mapper.UserRoleMapper">
+
+    <select id="getUserRoleByUserId" parameterType="java.lang.Long" resultType="io.juneqqq.core.auth.UserRole">
+        SELECT ur.id,
+               ur.userId,
+               ur.roleId,
+               ur.createTime,
+               ur.updateTime,
+               ar.NAME roleName,
+               ar.CODE roleCode
+        FROM t_user_role ur
+                 right JOIN t_auth_role ar ON ur.roleId = ar.id
+        WHERE ur.userId = #{userId}
+    </select>
+
+    <insert id="addUserRole" parameterType="io.juneqqq.core.auth.UserRole">
+        insert into t_user_role(userId,
+                                roleId,
+                                createTime)
+        values (#{userId},
+                #{roleId},
+                #{createTime})
+    </insert>
+
+</mapper>

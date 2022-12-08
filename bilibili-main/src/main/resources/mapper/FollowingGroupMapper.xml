@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.juneqqq.dao.mapper.FollowingGroupMapper">
+
+    <select id="getByType" parameterType="java.lang.String" resultType="io.juneqqq.dao.entity.FollowingGroup">
+        select *
+        from t_following_group
+        where `type` = #{type}
+    </select>
+
+    <select id="getById" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.FollowingGroup">
+        select *
+        from t_following_group
+        where id = #{id}
+    </select>
+
+    <select id="getByUserId" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.FollowingGroup">
+        select *
+        from t_following_group
+        where userId = #{userId}
+           or `type` in ('0', '1', '2')
+    </select>
+
+    <insert id="addFollowingGroup" parameterType="io.juneqqq.dao.entity.FollowingGroup" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into t_following_group(userId,
+                                      `name`,
+                                      `type`,
+                                      createTime,
+                                      updateTime)
+        values (#{userId},
+                #{name},
+                #{type},
+                #{createTime},
+                #{updateTime})
+    </insert>
+
+    <select id="getUserFollowingGroups" parameterType="java.lang.Long"
+            resultType="io.juneqqq.dao.entity.FollowingGroup">
+        select *
+        from t_following_group
+        where userId = #{userId}
+    </select>
+
+</mapper>
