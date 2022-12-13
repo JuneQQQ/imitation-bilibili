@@ -1,9 +1,9 @@
 package io.juneqqq.config;
 
-import cn.hutool.core.collection.CollectionUtil;
-import com.alibaba.fastjson.JSONObject;
+import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson2.JSONObject;
 import io.juneqqq.constant.CacheConstant;
-import io.juneqqq.constant.UserMomentsConstant;
+import io.juneqqq.constant.RocketMQConstant;
 import io.juneqqq.dao.entity.UserFollowing;
 import io.juneqqq.dao.entity.UserMoment;
 import io.juneqqq.service.common.UserFollowingService;
@@ -43,7 +43,7 @@ public class RocketMQConfig {
 
     @Bean
     public DefaultMQProducer testProducer() throws Exception {
-        DefaultMQProducer producer = new DefaultMQProducer(UserMomentsConstant.GROUP_TEST);
+        DefaultMQProducer producer = new DefaultMQProducer(RocketMQConstant.GROUP_TEST);
         producer.setNamesrvAddr(nameServerAddr);
         producer.start();
         return producer;
@@ -51,16 +51,13 @@ public class RocketMQConfig {
 
     @Bean
     public DefaultMQPushConsumer testConsumer() throws Exception {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(UserMomentsConstant.GROUP_TEST);
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(RocketMQConstant.GROUP_TEST);
         consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(UserMomentsConstant.TOPIC_TEST, "*");
+        consumer.subscribe(RocketMQConstant.TOPIC_TEST, "*");
         consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages, ConsumeConcurrentlyContext context) {
-//                if (messages.size() != 0) {
-//                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-//                }
-                log.info(UserMomentsConstant.GROUP_TEST + "收到消息：" + messages);
+                log.info(RocketMQConstant.GROUP_TEST + "收到消息：" + messages);
                 for (MessageExt message : messages) {
                     log.info(Arrays.toString(message.getBody()));
                 }
@@ -74,7 +71,7 @@ public class RocketMQConfig {
 
     @Bean("momentsProducer")
     public DefaultMQProducer momentsProducer() throws Exception {
-        DefaultMQProducer producer = new DefaultMQProducer(UserMomentsConstant.GROUP_MOMENTS);
+        DefaultMQProducer producer = new DefaultMQProducer(RocketMQConstant.GROUP_MOMENTS);
         producer.setNamesrvAddr(nameServerAddr);
         producer.start();
         return producer;
@@ -85,21 +82,22 @@ public class RocketMQConfig {
      */
     @Bean("momentsConsumer")
     public DefaultMQPushConsumer momentsConsumer() throws Exception {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(UserMomentsConstant.GROUP_MOMENTS);
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(RocketMQConstant.GROUP_MOMENTS);
         consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(UserMomentsConstant.TOPIC_MOMENTS, "*");
+        consumer.subscribe(RocketMQConstant.TOPIC_MOMENTS, "*");
         consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages, ConsumeConcurrentlyContext context) {
                 MessageExt msg = messages.get(0);
                 Optional.ofNullable(msg).ifPresentOrElse(m -> {
+                    assert msg != null;
                     log.debug("收到消息【momentsConsumer】：" + new String(msg.getBody()));
                     String bodyStr = new String(msg.getBody());
-                    UserMoment userMoment = JSONObject.toJavaObject(JSONObject.parseObject(bodyStr), UserMoment.class);
+                    UserMoment userMoment = JSONObject.parseObject(bodyStr, UserMoment.class);
                     Long userId = userMoment.getUserId();
-                    List<UserFollowing> fanList = userFollowingService.getUserFans(userId);
+                    List<UserFollowing> fanList = userFollowingService.getUserFanInfos(userId);
                     // 自己也是自己的粉丝
-                    if (CollectionUtil.isEmpty(fanList)) fanList = new ArrayList<>();
+                    if (CollUtil.isEmpty(fanList)) fanList = new ArrayList<>();
                     fanList.add(UserFollowing.builder().userId(userId).build());
 
                     for (UserFollowing fan : fanList) {
@@ -107,7 +105,7 @@ public class RocketMQConfig {
                         String key = CacheConstant.USER_SUBSCRIBED_CACHE_NAME + fan.getUserId();
                         stringRedisTemplate.opsForSet().add(key, bodyStr);
                     }
-                }, () -> log.warn("收到了一条空消息？messages:" + messages));
+                }, () -> log.warn("收到了一条null消息？messages:" + messages));
 
                 log.debug("\n消息处理完毕");
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -120,7 +118,7 @@ public class RocketMQConfig {
     @Bean("danmusProducer")
     public DefaultMQProducer danmusProducer() throws Exception {
         // 实例化消息生产者Producer
-        DefaultMQProducer producer = new DefaultMQProducer(UserMomentsConstant.GROUP_DANMUS);
+        DefaultMQProducer producer = new DefaultMQProducer(RocketMQConstant.GROUP_DANMUS);
         // 设置NameServer的地址
         producer.setNamesrvAddr(nameServerAddr);
         // 启动Producer实例
@@ -131,11 +129,11 @@ public class RocketMQConfig {
     @Bean("danmusConsumer")
     public DefaultMQPushConsumer danmusConsumer() throws Exception {
         // 实例化消费者
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(UserMomentsConstant.GROUP_DANMUS);
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(RocketMQConstant.GROUP_DANMUS);
         // 设置NameServer的地址
         consumer.setNamesrvAddr(nameServerAddr);
         // 订阅一个或者多个Topic，以及Tag来过滤需要消费的消息
-        consumer.subscribe(UserMomentsConstant.TOPIC_DANMUS, "*");
+        consumer.subscribe(RocketMQConstant.TOPIC_DANMUS, "*");
         // 注册回调实现类来处理从broker拉取回来的消息
         consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
@@ -156,7 +154,7 @@ public class RocketMQConfig {
                             e.printStackTrace();
                         }
                     }
-                }, () -> log.warn("收到了一条空消息？messages:" + messages));
+                }, () -> log.warn("收到了一条null消息？messages:" + messages));
 
                 log.debug("danmu消息消费完毕~");
                 // 标记该消息已经被成功消费

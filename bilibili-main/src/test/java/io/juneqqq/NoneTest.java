@@ -1,13 +1,18 @@
 package io.juneqqq;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson2.JSONReader;
+import io.juneqqq.dao.entity.UserInfo;
 import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
+import io.juneqqq.pojo.dto.cache.CacheUserInfoDto;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,6 +25,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class NoneTest {
+    @Test
+    void test() {
+        System.out.println(StandardCharsets.UTF_8.toString());
+    }
+
+    @Test
+    void testCopyProperties() {
+        UserInfo e1 = new UserInfo();
+        e1.setCoin(1);
+        e1.setAvatar("1");
+        EsUserInfoDto e2 = new EsUserInfoDto();
+        e2.setAvatar("bbb");
+        e2.setCoin(2222);
+        e2.setId(1L);
+        e2.setLevel(1);
+        BeanUtil.copyProperties(e1,e2,CopyOptions.create().setIgnoreNullValue(true));
+//        BeanUtil.copyProperties(e1,e2, true,CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
+        System.out.println(e2);
+    }
 
     @Test
     void testFastJson() {

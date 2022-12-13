@@ -1,92 +1,95 @@
 package io.juneqqq.controller;
 
-import com.alibaba.fastjson2.JSONObject;
-import io.juneqqq.core.entity.PageResult;
-import io.juneqqq.dao.entity.R;
-import io.juneqqq.dao.entity.User;
-import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.pojo.dto.request.elasticsearch.UserSearchCondition;
-import io.juneqqq.pojo.dto.response.elasticsearch.UserSearchResult;
-import io.juneqqq.service.common.SearchService;
+import io.juneqqq.core.auth.auth.ApiRouterConstant;
+import io.juneqqq.core.auth.auth.UserHolder;
+import io.juneqqq.pojo.dto.PageResult;
+import io.juneqqq.dao.entity.*;
+import io.juneqqq.pojo.dto.request.LoginUserDtoReq;
+import io.juneqqq.pojo.dto.response.LoginUserDtoResp;
 import io.juneqqq.service.common.UserFollowingService;
+import io.juneqqq.service.common.UserMomentService;
 import io.juneqqq.service.common.UserService;
-import io.juneqqq.service.common.impl.ElasticSearchServiceImpl;
 import io.juneqqq.util.RSAUtil;
-import io.juneqqq.util.UserSupport;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Set;
+
+import static io.juneqqq.core.auth.auth.SystemConfigConstant.HTTP_AUTH_HEADER_NAME;
+
 @Slf4j
+@RestController
 @Tag(name = "UserController", description = "用户模块")
+@RequestMapping(ApiRouterConstant.API_FRONT_USER_URL_PREFIX)
 public class UserController {
 
     @Resource
     private UserService userService;
-
     @Resource
-    private UserSupport userSupport;
+    private UserMomentService userMomentService;
 
     @Resource
     private UserFollowingService userFollowingService;
 
-    @Resource
-    private SearchService elasticSearchService;
-
-
-    @Operation(description = "查询用户")
-    @GetMapping("search-user-infos")
-    public R<PageResult<UserSearchResult>> searchVideo(
-            @ParameterObject UserSearchCondition condition
-    ) {
-        PageResult<UserSearchResult> contents = elasticSearchService.searchUserInfos(condition);
-        return new R<>(contents);
-    }
-
     @GetMapping("/users")
     @Operation(summary = "获取登录用户Info")
     public R<User> getUserInfo() {
-        Long userId = userSupport.getCurrentUserId();
-        User user = userService.getUser(userId);
-        return new R<>(user);
+        User user = userService.getUser(UserHolder.getUserId());
+        return R.ok(user);
     }
 
     @GetMapping("/rsa-pks")
     public R<String> getRsaPublicKey() {
         String pk = RSAUtil.getPublicKeyStr();
-        return new R<>(pk);
+        return R.ok(pk);
     }
 
     /**
      * 添加/注册用户
      */
-    @PostMapping("/users")
-    public R<String> addUser(@RequestBody User user) {
+    @Operation(summary = "添加/注册用户")
+    @PostMapping("/register")
+    public R<Void> addUser(@RequestBody User user) {
         userService.addUser(user);
-        return R.success();
+        return R.ok();
     }
 
-    @PostMapping("/user-tokens")
-    public R<String> login(@RequestBody User user) throws Exception {
-        String token = userService.login(user);
-        return new R<>(token);
+    /**
+     * 用户登录接口
+     */
+    @Operation(summary = "用户登录接口")
+    @PostMapping("/login")
+    public R<LoginUserDtoResp> login(@RequestBody LoginUserDtoReq user) {
+        LoginUserDtoResp resp = userService.login(user);
+        return R.ok(resp);
+    }
+
+    /**
+     * 退出登录
+     * 仅仅是清除 redis 的刷新标志，该令牌其实仍然有效，在令牌生命周期较短时此方式比较好用
+     * 如果想要真正无效，可以设置JWT黑名单
+     */
+    @Operation(summary = "用户登录接口")
+    @PostMapping("/logout")
+    public R<Void> logout(HttpServletRequest request) {
+        userService.logout(UserHolder.getUserId(), request.getHeader(HTTP_AUTH_HEADER_NAME));
+        return R.ok();
     }
 
     /**
      * 修改用户信息
      */
     @PutMapping("/users")
-    public R<String> updateUsers(@RequestBody User user) throws Exception {
-        Long userId = userSupport.getCurrentUserId();
-        user.setId(userId);
+    public R<Void> updateUsers(@RequestBody User user) {
+        user.setId(UserHolder.getUserId());
         userService.updateUsers(user);
-        return R.success();
+        return R.ok();
     }
 
 
@@ -94,61 +97,97 @@ public class UserController {
      * 修改用户info
      */
     @PutMapping("/user-infos")
-    public R<String> updateUserInfos(@RequestBody UserInfo userInfo) {
-        Long userId = userSupport.getCurrentUserId();
-        userInfo.setUserId(userId);
-        userService.updateUserInfos(userInfo);
-        return R.success();
+    public R<Void> updateUserInfos(@RequestBody UserInfo userInfo) {
+        userInfo.setUserId(userInfo.getUserId());
+        userService.updateUserInfo(userInfo);
+        return R.ok();
     }
 
     /**
-     * 查询用户info
+     * 根据昵称查询用户info
      */
     @GetMapping("/user-infos")
     public R<PageResult<UserInfo>> pageListUserInfos(
             Long no,
             Long size,
             @RequestParam(required = false) String nick) {
-        Long userId = userSupport.getCurrentUserId();
-        JSONObject params = new JSONObject();
-        params.put("no", no);
-        params.put("size", size);
-        params.put("nick", nick);
-        params.put("userId", userId);
 
-        log.debug("查询用户info服务端接收到的参数：" + params);
-
-        PageResult<UserInfo> result = userService.pageListUserInfos(params);
+        PageResult<UserInfo> result = userService.pageListUserInfos(no, size, nick, UserHolder.getUserId());
         log.debug(result.toString());
         if (result.total() > 0) {
             // 检查这些查出来的info是否关注了自己 -> followed=true
-            userFollowingService.checkFollowingStatus(result.list(), userId);
+            userFollowingService.checkFollowingStatus(result.list(), UserHolder.getUserId());
         }
         log.debug(result.toString());
-        return new R<>(result);
+        return R.ok(result);
     }
 
     /**
-     * 此方法仍然返回token(accessToken)
-     * refreshToken是保存在 redis 中的
+     * 添加关注用户
      */
-    @PostMapping("/user-v2")
-    public R<String> loginPlus(@RequestBody User user) throws Exception {
-        return new R<>(userService.loginForDts(user));
-    }
-
-    @DeleteMapping("/refresh-tokens")
-    public R<String> logout(HttpServletRequest request) {
-        userSupport.deleteToken();
-        return R.success();
+    @PostMapping("/user-followings")
+    public R<Void> addUserFollowings(@RequestBody UserFollowing userFollowing) {
+        userFollowing.setUserId(UserHolder.getUserId());
+        userFollowingService.addUserFollowings(userFollowing);
+        return R.ok();
     }
 
     /**
-     * 前端主动更新refreshToken
+     * 获取当前用户关注了谁
      */
-    @PostMapping("/access-tokens")
-    public R<String> refreshAccessToken(Long userId) throws Exception {
-        return new R<>(userSupport.refreshToken(userId));
+    @GetMapping("/user-followings")
+    public R<List<FollowingGroup>> getUserFollowings() {
+        List<FollowingGroup> result = userFollowingService.getUserFollowings(UserHolder.getUserId());
+        return R.ok(result);
+    }
+
+    /**
+     * 获取当前用户被谁关注
+     */
+    @GetMapping("/user-fans")
+    public R<List<UserFollowing>> getUserFans() {
+        List<UserFollowing> result = userFollowingService.getUserFanInfos(UserHolder.getUserId());
+        return R.ok(result);
+    }
+
+    /**
+     * 添加关注用户的分组
+     */
+    @PostMapping("/user-following-groups")
+    public R<String> addUserFollowingGroups(@RequestBody FollowingGroup followingGroup) {
+        followingGroup.setUserId(UserHolder.getUserId());
+        Long groupId = userFollowingService.addUserFollowingGroups(followingGroup);
+        return R.ok(String.valueOf(groupId));
+    }
+
+    /**
+     * 获取关注用户的分组
+     */
+    @GetMapping("/user-following-groups")
+    public R<List<FollowingGroup>> getUserFollowingGroups() {
+        List<FollowingGroup> list = userFollowingService.getUserFollowingGroups(UserHolder.getUserId());
+        return R.ok(list);
+    }
+
+
+    @PostMapping("/user-moments")
+    public R<Void> addUserMoments(@RequestBody UserMoment userMoment) {
+        userMoment.setUserId(UserHolder.getUserId());
+        userMomentService.addUserMoments(userMoment);
+        return R.ok();
+    }
+
+    @GetMapping("/user-subscribed-moments")
+    public R<Set<UserMoment>> getUserSubscribedMoments() {
+        Set<UserMoment> set = userMomentService.getUserSubscribedMoments(UserHolder.getUserId());
+        return R.ok(set);
+    }
+
+    @GetMapping("/user-moments")
+    public R<List<UserMoment>> getUserMoments() {
+        List<UserMoment> userMoments = userMomentService.getUserMoments(UserHolder.getUserId());
+        return R.ok(userMoments);
     }
 
 }
+

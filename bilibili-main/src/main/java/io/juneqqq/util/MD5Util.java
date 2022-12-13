@@ -12,6 +12,7 @@ import java.security.MessageDigest;
  * 特点：加密速度快，不需要秘钥，但是安全性不高，需要搭配随机盐值使用
  *
  */
+@SuppressWarnings("all")
 public class MD5Util {
 
 	public static String sign(String content, String salt, String charset) {

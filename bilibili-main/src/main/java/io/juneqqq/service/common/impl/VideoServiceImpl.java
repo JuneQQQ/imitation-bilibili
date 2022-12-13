@@ -1,13 +1,15 @@
 package io.juneqqq.service.common.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.juneqqq.core.entity.PageResult;
-import io.juneqqq.core.entity.ResultCode;
+import io.juneqqq.pojo.dto.PageResult;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
+import io.juneqqq.dao.repository.esmodel.EsVideoDto;
 import io.juneqqq.pojo.dto.UserPreference;
-import io.juneqqq.core.exception.CustomException;
 import io.juneqqq.pojo.dto.database.VideoLCC;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
 import io.juneqqq.service.common.FileService;
@@ -71,11 +73,8 @@ public class VideoServiceImpl implements VideoService {
 
     @Resource
     private VideoMapper videoMapper;
-
-
     @Resource
     private UserServiceImpl userService;
-
     @Resource
     private ImageUtil imageUtil;
 
@@ -93,6 +92,21 @@ public class VideoServiceImpl implements VideoService {
 
     private static final int FRAME_NO = 30;
 
+    @Override
+    public List<EsVideoDto> selectBatchEsVideoDto(int current, int size) {
+        Page<Video> videoPage = videoMapper.selectPage(new Page<>(current, size), null);
+        List<EsVideoDto> list = new ArrayList<>();
+        for (Video video : videoPage.getRecords()) {
+            EsVideoDto evd = new EsVideoDto();
+            BeanUtil.copyProperties(video, evd);
+            evd.setNick(userService.getUserInfo(video.getUserId()).getNick());
+            VideoLCC videoLCC = getVideoLCC(video.getId());
+            BeanUtil.copyProperties(videoLCC, evd);
+            list.add(evd);
+        }
+        return list;
+    }
+
     @Transactional
     public void addVideos(Video video) {
         videoMapper.insert(video);
@@ -104,12 +118,12 @@ public class VideoServiceImpl implements VideoService {
         });
     }
 
-    public PageResult<Video> pageListVideos(Long size, Long no, String partition) {
+    public PageResult<Video> pageListVideos(Long size, Long current, String partition) {
 
         LambdaQueryWrapper<Video> wrapper = new LambdaQueryWrapper<>();
         if (partition != null) wrapper.eq(Video::getPartition, partition);
 
-        Page<Video> videoPage = videoMapper.selectPage(new Page<>(no, size), wrapper);
+        Page<Video> videoPage = videoMapper.selectPage(new Page<>(current, size), wrapper);
 
         return PageResult.of(
                 videoPage.getTotal(),
@@ -178,15 +192,9 @@ public class VideoServiceImpl implements VideoService {
                 log.error("\n连接异常：" + e.getMessage());
             }
         } catch (IOException e) {
-            throw new CustomException("\n" + ResultCode.UNKNOWN_ERROR + "\n异常信息：" + e);
+            e.printStackTrace();
+            throw new BusinessException(ErrorCodeEnum.FILE_UPLOAD_ERROR);
         }
-//        try {
-//            IoUtil.copy(fis, response.getOutputStream());
-//        } catch (IORuntimeException e){
-//            throw new CustomException("\n"+e.getMessage()+" "+e.getClass());
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     public void addVideoLike(Long userId, Long videoId) {
@@ -195,10 +203,10 @@ public class VideoServiceImpl implements VideoService {
         videoLike.setUserId(userId);
 
         Video video = videoMapper.selectById(videoLike.getVideoId());
-        if (video == null) throw new CustomException("视频不存在");
+        if (video == null) throw new BusinessException(ErrorCodeEnum.TARGET_VIDEO_NOT_EXISTS);
         Long before = videoLikeMapper.selectCount(new LambdaQueryWrapper<VideoLike>()
                 .eq(VideoLike::getVideoId, videoLike.getVideoId()).eq(VideoLike::getUserId, videoLike.getUserId()));
-        if (before > 0) throw new CustomException("已经点赞"); // 已经点赞
+        if (before > 0) throw new BusinessException(ErrorCodeEnum.VIDEO_HAS_BEEN_LIKE_BY_SAME_USER);
         videoLikeMapper.insert(videoLike);
     }
 
@@ -224,12 +232,10 @@ public class VideoServiceImpl implements VideoService {
         Long videoId = videoCollection.getVideoId();
         Long groupId = videoCollection.getGroupId();
         if (videoId == null || groupId == null) {
-            throw new CustomException("参数异常！");
+            throw new BusinessException(ErrorCodeEnum.USER_ERROR);
         }
         Video video = videoMapper.selectById(videoId);
-        if (video == null) {
-            throw new CustomException("非法视频！");
-        }
+        if (video == null) throw new BusinessException(ErrorCodeEnum.TARGET_VIDEO_NOT_EXISTS);
         //删除原有视频收藏
         videoMapper.deleteVideoCollection(videoId, userId);
         //添加新的视频收藏
@@ -257,21 +263,15 @@ public class VideoServiceImpl implements VideoService {
     @Transactional
     public void addVideoCoins(VideoCoin videoCoin, Long userId) {
         Long videoId = videoCoin.getVideoId();
-        if (videoId == null) {
-            throw new CustomException("空参传入");
-        }
+        if (videoId == null) throw new BusinessException(ErrorCodeEnum.USER_ERROR);
         Integer amount = videoCoin.getAmount();
-        if (amount > 3 || amount < 0) throw new CustomException("仅允许投0~3个币");
+        if (amount > 3 || amount < 0) throw new BusinessException(ErrorCodeEnum.COIN_OUT_OF_LIMIT);
         Video video = videoMapper.getVideoById(videoId);
-        if (video == null) {
-            throw new CustomException("数据库中视频不存在");
-        }
+        if (video == null) throw new BusinessException(ErrorCodeEnum.TARGET_VIDEO_NOT_EXISTS);
         //查询当前登录用户是否拥有足够的硬币
         Integer userCoinsAmount = userService.getCoinAmount(userId);
         userCoinsAmount = userCoinsAmount == null ? 0 : userCoinsAmount;
-        if (amount > userCoinsAmount) {
-            throw new CustomException("用户硬币数量不足");
-        }
+        if (amount > userCoinsAmount)  throw new BusinessException(ErrorCodeEnum.COIN_NOT_ENOUGH);
         // 查询已投
         VideoCoin dbVideoCoin = videoMapper.getVideoCoinByVideoIdAndUserId(videoId, userId);
         // 新增视频投币
@@ -281,17 +281,16 @@ public class VideoServiceImpl implements VideoService {
             videoCoinMapper.insert(videoCoin);
         } else {
             // 投过币了，想再投
-            if (dbVideoCoin.getAmount() + amount > 3) throw new CustomException("最多允许投三个币");
+            if (dbVideoCoin.getAmount() + amount > 3) throw new BusinessException(ErrorCodeEnum.COIN_OUT_OF_LIMIT);
             Integer dbAmount = dbVideoCoin.getAmount();
             dbAmount += amount;
             //更新视频投币
             videoCoin.setId(dbVideoCoin.getId());
             videoCoin.setUserId(userId);
             videoCoin.setAmount(dbAmount);
-            int update = videoCoinMapper.updateById(videoCoin);
-//            int update = videoCoinDao.update(videoCoin, new LambdaQueryWrapper<VideoCoin>()
-//                    .eq(VideoCoin::getVideoId, videoId).eq(VideoCoin::getUserId, userId));
-            if (update != 1) throw new CustomException("未知异常：更新条目数量不是1");
+            int update = videoCoinMapper.update(videoCoin, new LambdaQueryWrapper<VideoCoin>()
+                    .eq(VideoCoin::getVideoId, videoId).eq(VideoCoin::getUserId, userId));
+            if (update != 1) throw new BusinessException(ErrorCodeEnum.UNKNOW_EXCEPTION);
         }
         //更新用户当前硬币总数
         userService.updateCoin(userId, (userCoinsAmount - amount));
@@ -308,10 +307,10 @@ public class VideoServiceImpl implements VideoService {
 
     public void addVideoComment(VideoComment videoComment) {
         Long videoId = videoComment.getVideoId();
-        if (videoId == null) throw new CustomException("空参传入！");
+        if (videoId == null) throw new BusinessException(ErrorCodeEnum.USER_ERROR);
 
         Video video = videoMapper.getVideoById(videoId);
-        if (video == null) throw new CustomException("数据库没有这个视频！");
+        if (video == null) throw new BusinessException(ErrorCodeEnum.TARGET_VIDEO_NOT_EXISTS);
 
         videoCommentMapper.insert(videoComment);
     }
@@ -319,9 +318,7 @@ public class VideoServiceImpl implements VideoService {
 
     public PageResult<VideoComment> pageListVideoComments(Integer size, Integer no, Long videoId) {
         Video video = videoMapper.getVideoById(videoId);
-        if (video == null) {
-            throw new CustomException("非法视频！");
-        }
+        if (video == null) throw new BusinessException(ErrorCodeEnum.TARGET_VIDEO_NOT_EXISTS);
 
         LambdaQueryWrapper<VideoComment> wrapper = new LambdaQueryWrapper<>();
         if (videoId != null) wrapper.eq(VideoComment::getVideoId, videoId);
@@ -372,7 +369,7 @@ public class VideoServiceImpl implements VideoService {
 
     public Map<String, Object> getVideoDetails(Long videoId) {
         Video video = videoMapper.selectById(videoId);
-        if (video == null) throw new CustomException("不存在此视频！");
+        if (video == null) throw new BusinessException(ErrorCodeEnum.TARGET_VIDEO_NOT_EXISTS);
         FileInfo fileInfo = fileService.getFileInfoById(video.getFileId());
         Long userId = video.getUserId();
         User user = userService.getUser(userId);
@@ -543,9 +540,8 @@ public class VideoServiceImpl implements VideoService {
             long timestamp = fFmpegFrameGrabber.getTimestamp();
             frame = fFmpegFrameGrabber.grabImage();
             if (count == i) {
-                if (frame == null) {
-                    throw new CustomException("无效帧");
-                }
+                // 无效帧
+                if (frame == null) throw new BusinessException(ErrorCodeEnum.SYSTEM_ERROR);
                 BufferedImage bufferedImage = converter.getBufferedImage(frame);
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 ImageIO.write(bufferedImage, "png", os);
@@ -614,11 +610,10 @@ public class VideoServiceImpl implements VideoService {
         });
         try {
             CompletableFuture.allOf(v1, v2, v3).get();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
-            throw new CustomException("子任务被打断，异常信息：" + e.getMessage());
-        } catch (ExecutionException e) {
-            throw new CustomException("子任务执行异常，异常信息：" + e.getMessage());
+            log.error("错误信息：" + e.getMessage());
+            throw new BusinessException(ErrorCodeEnum.SYSTEM_TIMEOUT_ERROR);
         }
         return videoLCC;
     }

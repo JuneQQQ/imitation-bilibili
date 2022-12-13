@@ -1,4 +1,4 @@
-package io.juneqqq.core.entity;
+package io.juneqqq.pojo.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

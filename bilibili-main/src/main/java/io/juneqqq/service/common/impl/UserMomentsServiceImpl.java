@@ -2,11 +2,12 @@ package io.juneqqq.service.common.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 import io.juneqqq.dao.mapper.UserMomentsMapper;
 import io.juneqqq.constant.CacheConstant;
-import io.juneqqq.constant.UserMomentsConstant;
+import io.juneqqq.constant.RocketMQConstant;
 import io.juneqqq.dao.entity.UserMoment;
-import io.juneqqq.core.exception.CustomException;
 import io.juneqqq.service.common.UserMomentService;
 import io.juneqqq.util.RocketMQUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
@@ -40,24 +42,24 @@ public class UserMomentsServiceImpl implements UserMomentService {
             userMomentsMapper.insert(userMoment);
             userMoment.setCreateTime(null);
             userMoment.setUpdateTime(null);
-            Message msg = new Message(UserMomentsConstant.TOPIC_MOMENTS,
+            Message msg = new Message(RocketMQConstant.TOPIC_MOMENTS,
                     JSONObject.toJSONString(userMoment).getBytes(StandardCharsets.UTF_8));
             // 准备消息给RocketMQ
             try {
                 RocketMQUtil.syncSendMsg(momentsProducer, msg);
             } catch (Exception e) {
-                throw new CustomException("MQ消息未发送成功，异常信息："+e.getMessage());
+                log.error("MQ消息未发送成功，异常信息：{}", e.getMessage());
+                throw new BusinessException(ErrorCodeEnum.MQ_MESSAGE_SEND_FAILED);
             }
         } else {
-            throw new CustomException("不允许重复值插入！");
+            throw new BusinessException(ErrorCodeEnum.USER_MOMENT_ID_HAS_EXISTED);
         }
 
     }
 
     public List<UserMoment> getUserMoments(Long userId) {
-        List<UserMoment> userMoments = userMomentsMapper.selectList(new LambdaQueryWrapper<>(UserMoment.class)
+        return userMomentsMapper.selectList(new LambdaQueryWrapper<>(UserMoment.class)
                 .eq(UserMoment::getUserId, userId));
-        return userMoments;
     }
 
     public Set<UserMoment> getUserSubscribedMoments(Long userId) {

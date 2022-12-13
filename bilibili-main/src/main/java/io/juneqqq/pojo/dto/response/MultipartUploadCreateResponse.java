@@ -19,7 +19,6 @@ import java.util.List;
 @Builder
 // 分片上传创建响应类
 public class MultipartUploadCreateResponse {
-
     private String uploadId; // 上传编号
 
     private List<ChunkInfo> chunks; // 分片信息

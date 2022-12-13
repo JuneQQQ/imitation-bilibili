@@ -1,7 +1,7 @@
 package io.juneqqq;
 
 
-import io.juneqqq.constant.UserMomentsConstant;
+import io.juneqqq.constant.RocketMQConstant;
 import io.juneqqq.util.RocketMQUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -28,7 +28,7 @@ public class RocketMQTest {
         for (int i = 0; i < 1000; i++) {
             Message message = new Message();
             message.setBody(("this is a test message,seq:"+i).getBytes());
-            message.setTopic(UserMomentsConstant.TOPIC_TEST);
+            message.setTopic(RocketMQConstant.TOPIC_TEST);
             RocketMQUtil.asyncSendMsg(testProducer,message);
         }
     }

@@ -13,7 +13,14 @@ public interface UserFollowingService {
 
     List<FollowingGroup> getUserFollowings(Long userId);
 
-    List<UserFollowing> getUserFans(Long userId);
+    List<UserFollowing> getUserFanInfos(Long userId);
+
+    /**
+     * 获取用户粉丝数
+     * @param userId 用户id
+     * @return Long 数目
+     */
+    Integer getUserFanCount(Long userId);
 
 
     Long addUserFollowingGroups(FollowingGroup followingGroup);

@@ -27,8 +27,8 @@ import java.time.LocalDateTime;
 public class EsUserInfoDto {
     @Id
     @Field(type = FieldType.Long)
-    private Long id;
-    @Field(type = FieldType.Long,index = false,docValues = false)
+    private Long id;  // UserInfo表id
+    @Field(type = FieldType.Long)
     private Long userId;
     @Field(type = FieldType.Text, searchAnalyzer = "ik_smart", analyzer = "ik_smart")
     private String nick;
@@ -48,12 +48,12 @@ public class EsUserInfoDto {
     private Integer level;
     @Field(type = FieldType.Integer)
     private Integer fanCount;
-    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second_millis)
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime createTime;
 
-    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second_millis)
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime updateTime;

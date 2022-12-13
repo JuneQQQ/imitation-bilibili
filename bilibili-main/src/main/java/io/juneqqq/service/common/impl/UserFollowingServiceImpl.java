@@ -1,13 +1,16 @@
 package io.juneqqq.service.common.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 import io.juneqqq.dao.mapper.UserFollowingMapper;
 import io.juneqqq.constant.UserConstant;
 import io.juneqqq.dao.entity.FollowingGroup;
 import io.juneqqq.dao.entity.User;
 import io.juneqqq.dao.entity.UserFollowing;
 import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.core.exception.CustomException;
+import io.juneqqq.dao.repository.UserInfoDtoRepository;
+import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
 import io.juneqqq.service.common.FollowingGroupService;
 import io.juneqqq.service.common.SearchService;
 import io.juneqqq.service.common.UserFollowingService;
@@ -28,15 +31,11 @@ public class UserFollowingServiceImpl implements UserFollowingService {
     private UserFollowingMapper userFollowingMapper;
 
     @Resource
-    private FollowingGroupService followingGroupService;
-
+    private UserInfoDtoRepository userInfoDtoRepository;
     @Resource
-    private SearchService elasticSearchService;
-
+    private FollowingGroupService followingGroupService;
     @Resource
     private UserServiceImpl userService;
-
-
     public boolean getFollowingRelation(long cId, long fId) {
         return userFollowingMapper.selectOne(new LambdaQueryWrapper<>(UserFollowing.class)
                 .eq(UserFollowing::getFollowingId, fId)
@@ -52,13 +51,13 @@ public class UserFollowingServiceImpl implements UserFollowingService {
         } else {
             FollowingGroup followingGroup = followingGroupService.getById(groupId);
             if (followingGroup == null) {
-                throw new CustomException("关注分组不存在！");
+                throw new BusinessException(ErrorCodeEnum.TARGET_GROUP_NOT_EXISTS);
             }
         }
         Long followingId = userFollowing.getFollowingId();
         User user = userService.getUserById(followingId);
         if (user == null) {
-            throw new CustomException("关注的用户不存在！");
+            throw new BusinessException(ErrorCodeEnum.TARGET_USER_NOT_EXISTS);
         }
         // 添加关联关系：先删再加
         userFollowingMapper.delete(new LambdaQueryWrapper<UserFollowing>().eq(UserFollowing::getFollowingId, followingId));
@@ -66,8 +65,9 @@ public class UserFollowingServiceImpl implements UserFollowingService {
 
         UserInfo userInfo = userService.getUserInfo(user.getId());
         userInfo.setFollowing(true);
-//        elasticSearchService.deleteUserInfo(userInfo); // TODO
-//        elasticSearchService.addUserInfo(userInfo);
+        userInfoDtoRepository.deleteByUserId(userInfo.getUserId());
+        EsUserInfoDto es = userService.getEsUserInfoDto(userInfo.getUserId());
+        userInfoDtoRepository.save(es);
     }
 
 
@@ -130,7 +130,7 @@ public class UserFollowingServiceImpl implements UserFollowingService {
     /**
      * 获取当前用户 粉丝
      */
-    public List<UserFollowing> getUserFans(Long userId) {
+    public List<UserFollowing> getUserFanInfos(Long userId) {
         // 查询当前用户的 粉丝关联关系 集合
         List<UserFollowing> relations = userFollowingMapper.selectList(
                 new LambdaQueryWrapper<UserFollowing>().
@@ -166,6 +166,12 @@ public class UserFollowingServiceImpl implements UserFollowingService {
             }
         }
         return relations;
+    }
+
+    @Override
+    public Integer getUserFanCount(Long userId) {
+        return Math.toIntExact(userFollowingMapper.selectCount(new LambdaQueryWrapper<>(UserFollowing.class)
+                .eq(UserFollowing::getFollowingId, userId)));
     }
 
     public Long addUserFollowingGroups(FollowingGroup followingGroup) {

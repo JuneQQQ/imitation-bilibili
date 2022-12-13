@@ -8,12 +8,17 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * @author june
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CacheUserInfoDto implements Serializable {
 
-    // 注意和数据库dao对象字段名完全一致
+    /**
+     * UserInfo 表id
+     */
     private Long id;
 
     private Long userId;

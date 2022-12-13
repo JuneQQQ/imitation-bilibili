@@ -1,42 +1,78 @@
 package io.juneqqq.dao.entity;
 
-import lombok.Data;
+import io.juneqqq.core.exception.ErrorCodeEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
-@Data
+import java.util.Objects;
+
+@Getter
 public class R<T> {
 
-    private Integer code;
+    /**
+     * 响应码
+     */
+    @Schema(description = "错误码，00000-没有错误")
+    private final String code;
 
-    private String msg;
+    /**
+     * 响应消息
+     */
+    @Schema(description = "响应消息")
+    private final String message;
 
+    /**
+     * 响应数据
+     */
+    @Schema(description = "响应数据")
     private T data;
 
-    public R(int code, String msg){
-        this.code = code;
-        this.msg = msg;
+    private R() {
+        this.code = ErrorCodeEnum.OK.getCode();
+        this.message = ErrorCodeEnum.OK.getMessage();
     }
 
-    public R(T data){
+    private R(ErrorCodeEnum errorCode) {
+        this.code = errorCode.getCode();
+        this.message = errorCode.getMessage();
+    }
+
+    private R(T data) {
+        this();
         this.data = data;
-        this.msg = "成功";
-        this.code = 200;
-    }
-    public R(int code,T data){
-        this.data = data;
-        this.msg = "成功";
-        this.code = code;
     }
 
-    public static R<String> success(){
-        R<String> r = new R<>(null);
-        r.setCode(200);
-        return r;
-    }
-    public static R<String> fail(){
-        return new R<>(1, "失败");
+    /**
+     * 业务处理成功,无数据返回
+     */
+    public static R<Void> ok() {
+        return new R<>();
     }
 
-    public static R<String> fail(int code, String msg){
-        return new R<>(code, msg);
+    /**
+     * 业务处理成功，有数据返回
+     */
+    public static <T> R<T> ok(T data) {
+        return new R<>(data);
+    }
+
+    /**
+     * 业务处理失败
+     */
+    public static R<Void> fail(ErrorCodeEnum errorCode) {
+        return new R<>(errorCode);
+    }
+    /**
+     * 系统错误
+     */
+    public static R<Void> error() {
+        return new R<>(ErrorCodeEnum.SYSTEM_ERROR);
+    }
+
+    /**
+     * 判断是否成功
+     */
+    public boolean isOk() {
+        return Objects.equals(this.code, ErrorCodeEnum.OK.getCode());
     }
 }

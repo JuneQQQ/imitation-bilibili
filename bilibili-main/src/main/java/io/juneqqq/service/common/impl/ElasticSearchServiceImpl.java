@@ -16,21 +16,20 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.juneqqq.constant.elastic.EsConstant;
 import io.juneqqq.constant.elastic.UserInfoIndex;
 import io.juneqqq.constant.elastic.VideoIndex;
-import io.juneqqq.core.entity.PageResult;
-import io.juneqqq.core.exception.CustomException;
-import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.dao.entity.Video;
+import io.juneqqq.pojo.dto.PageResult;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 
 import io.juneqqq.dao.repository.UserInfoDtoRepository;
 import io.juneqqq.dao.repository.VideoDtoRepository;
 import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
 import io.juneqqq.dao.repository.esmodel.EsVideoDto;
-import io.juneqqq.pojo.dto.database.VideoLCC;
 import io.juneqqq.pojo.dto.request.elasticsearch.UserSearchCondition;
 import io.juneqqq.pojo.dto.request.elasticsearch.VideoSearchCondition;
 import io.juneqqq.pojo.dto.response.elasticsearch.UserSearchResult;
 import io.juneqqq.pojo.dto.response.elasticsearch.VideoSearchResult;
 import io.juneqqq.service.common.SearchService;
+import io.juneqqq.service.common.UserService;
 import io.juneqqq.service.common.VideoService;
 import io.juneqqq.util.Try;
 import jakarta.annotation.PostConstruct;
@@ -59,7 +58,7 @@ public class ElasticSearchServiceImpl implements SearchService {
     private VideoService videoService;
 
     @Resource
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Resource
     private ElasticsearchTemplate elasticsearchTemplate;
@@ -78,30 +77,6 @@ public class ElasticSearchServiceImpl implements SearchService {
                         log.warn("{} mapping 添加失败。若有必要，请在kibana使用\n DELETE {}", UserInfoIndex.NAME, UserInfoIndex.NAME));
     }
 
-    public void addUserInfo(UserInfo userInfo) {
-        EsUserInfoDto dto = new EsUserInfoDto();
-        BeanUtil.copyProperties(userInfo, dto);
-        userInfoDtoRepository.save(dto);
-    }
-
-    public void deleteUserInfo(Long userId) {
-        userInfoDtoRepository.deleteById(userId);
-    }
-
-    public void addVideo(Video video) {
-        VideoLCC vlcc = null;
-        try {
-            vlcc = videoService.getVideoLCC(video.getId());
-        } catch (Exception e) {
-            throw new CustomException(e.getMessage());
-        }
-        EsVideoDto evd = new EsVideoDto();
-        evd.setNick(userService.getUserInfo(video.getUserId()).getNick());
-        BeanUtil.copyProperties(video, evd);
-        BeanUtil.copyProperties(vlcc, evd);
-        videoDtoRepository.save(evd);
-    }
-
     /**
      * 搜索用户info
      */
@@ -118,7 +93,8 @@ public class ElasticSearchServiceImpl implements SearchService {
             log.debug("es response:" + response.toString());
             return buildSearchResult(response, condition);
         } catch (IOException e) {
-            throw new CustomException("检索异常，异常信息：" + e.getMessage());
+            log.error("检索异常，异常信息：{}",e.getMessage());
+            throw new BusinessException(ErrorCodeEnum.SEARCH_ERROR);
         }
     }
 
@@ -215,7 +191,8 @@ public class ElasticSearchServiceImpl implements SearchService {
             log.debug("es response:" + response.toString());
             return buildSearchResult(response, condition);
         } catch (IOException e) {
-            throw new CustomException("检索异常，异常信息：" + e.getMessage());
+            log.error("es搜索异常，异常信息：{}",e.getMessage());
+            throw new BusinessException(ErrorCodeEnum.SEARCH_ERROR);
         }
     }
 
@@ -289,10 +266,5 @@ public class ElasticSearchServiceImpl implements SearchService {
                         t -> t.preTags(EsConstant.STRONG_PRE_TAG).postTags(EsConstant.STRONG_POST_TAG))
                 .fields(VideoIndex.FIELD_USER_NICK,
                         t -> t.preTags(EsConstant.STRONG_PRE_TAG).postTags(EsConstant.STRONG_POST_TAG)));
-    }
-
-
-    public void deleteAllVideos() {
-        videoDtoRepository.deleteAll();
     }
 }

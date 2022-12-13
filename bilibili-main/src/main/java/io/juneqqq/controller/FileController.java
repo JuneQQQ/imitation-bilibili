@@ -1,7 +1,9 @@
 package io.juneqqq.controller;
 
 import io.juneqqq.constant.CacheConstant;
-import io.juneqqq.core.exception.CustomException;
+import io.juneqqq.core.auth.auth.ApiRouterConstant;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 import io.juneqqq.dao.entity.FileInfo;
 import io.juneqqq.dao.entity.R;
 import io.juneqqq.pojo.dto.request.MultipartUploadRequest;
@@ -10,6 +12,7 @@ import io.juneqqq.pojo.dto.response.MultipartUploadCreateResponse;
 import io.juneqqq.pojo.vo.ListObjectVo;
 import io.juneqqq.service.common.FileService;
 import io.minio.GetObjectResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,8 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@Tag(name = "FileController",description = "文件上传模块")
+@RequestMapping(ApiRouterConstant.API_FRONT_RESOURCE_URL_PREFIX)
 public class FileController {
     @Resource(name = "MinioFileServiceImpl")
     private FileService fileService;
@@ -34,19 +39,19 @@ public class FileController {
     @GetMapping("/files-info")
     public R<FileInfo> getFileInfo(String bucket, String hash) {
         FileInfo fi = fileService.getFileInfoFromDB(bucket, hash);
-        return new R<>(fi);
+        return R.ok(fi);
     }
 
     @GetMapping("/bucket-files")
     public R<List<ListObjectVo>> getBucketInfo(String bucket, String prefix) {
         List<ListObjectVo> items = fileService.listBucketInfo(bucket, prefix);
-        return new R<>(items);
+        return R.ok(items);
     }
 
     @GetMapping("/preview-files")
     public R<String> getPreviewURL(String bucket, String fileName) {
         String url = fileService.preview(fileName, bucket);
-        return new R<>(url);
+        return R.ok(url);
     }
 
 
@@ -54,7 +59,7 @@ public class FileController {
      * 获取全部流
      */
     @GetMapping("/file-inputstream")
-    public R<String> getObject(String fileName, String bucket, String hash, HttpServletResponse response) throws IOException {
+    public R<Void> getObject(String fileName, String bucket, String hash, HttpServletResponse response) throws IOException {
         GetObjectResponse is = fileService.getFileInputStream(fileName, bucket, hash, null);
         response.setCharacterEncoding("utf-8");
 //        // 设置强制下载不打开
@@ -76,14 +81,14 @@ public class FileController {
         if (size == null && total >= 1024 * 1024 * 10)
             stringRedisTemplate.opsForValue().set(CacheConstant.FILE_SIZE_CACHE_NAME + hash, String.valueOf(total));
         is.close();
-        return R.success();
+        return R.ok();
     }
 
     /**
      * 获取一部分流
      */
     @GetMapping("/file-offset-inputstream")
-    public R<String> getObject(String fileName, String bucket, String hash, long offset, long length, HttpServletResponse response) throws IOException {
+    public R<Void> getObject(String fileName, String bucket, String hash, long offset, long length, HttpServletResponse response) throws IOException {
         InputStream is = fileService.getFileInputStream(fileName, bucket, hash, offset, length, null);
         response.setCharacterEncoding("utf-8");
         response.setHeader("Content-Length", String.valueOf(length));
@@ -91,7 +96,7 @@ public class FileController {
         byte[] buf = new byte[1024 * 16]; // 16kb
         int len;
         long skip = is.skip(offset);
-        if (skip < offset) throw new CustomException("offset大于fileSize");
+        if (skip < offset) throw new BusinessException(ErrorCodeEnum.FILE_OFFSET_TOO_LARGE);
         try (ServletOutputStream os = response.getOutputStream()) {
             while ((len = is.read(buf)) != -1) {
                 os.write(buf, 0, (int) Math.min(len, length));
@@ -99,14 +104,14 @@ public class FileController {
             }
         }
         is.close();
-        return R.success();
+        return R.ok();
     }
 
     /**
      * 普通上传
      */
     @PostMapping("/files")
-    public R<String> uploadMinioFile(
+    public R<Void> uploadMinioFile(
             MultipartFile file,
             String bucket,
             String hash
@@ -114,7 +119,7 @@ public class FileController {
         log.debug("file：" + file.getOriginalFilename());
         FileUploadResponse upload = fileService.upload(file, bucket, hash);
 
-        return R.success();
+        return R.ok();
     }
 
     // 创建分片上传
@@ -123,23 +128,8 @@ public class FileController {
             @RequestBody
             MultipartUploadRequest mur
     ) {
-        MultipartUploadCreateResponse multipartUpload =
-                fileService.createMultipartUpload(mur);
-        switch (multipartUpload.getFileStatusEnum()) {
-            case FILE_COMPLETELY_EXISTS -> {
-                return new R<>(2000, multipartUpload);
-            }
-            case FILE_NEED_MERGE -> {
-                return new R<>(2001, multipartUpload);
-            }
-            case FILE_PARTLY_EXISTS -> {
-                return new R<>(2002, multipartUpload);
-            }
-            case FILE_NOT_EXISTS -> {
-                return new R<>(2003, multipartUpload);
-            }
-        }
-        return new R<>(500, "文件状态码一个都不匹配吗？");
+        MultipartUploadCreateResponse multipartUpload = fileService.createMultipartUpload(mur);
+        return R.ok(multipartUpload);
     }
 
     // 合并分片
@@ -149,7 +139,8 @@ public class FileController {
             @RequestBody
             MultipartUploadRequest uploadRequest
     ) {
-        return new R<>(fileService.mergeMultipartUpload(uploadRequest));
+        FileUploadResponse fur = fileService.mergeMultipartUpload(uploadRequest);
+        return R.ok(fur);
     }
 
 

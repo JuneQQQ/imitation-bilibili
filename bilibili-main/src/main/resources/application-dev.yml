@@ -1,9 +1,20 @@
 server:
   port: 15005
+system:
+  xss:
+    enabled: true
+    excludes:
+      - /system/notice/*
+      - /test/*
+  jwt:
+    secret: E66559580A1ADF48CDD928516062F12F
+    expire-seconds: 30000000
 
 spring:
   application:
     name: bilibili-main
+  main:
+    allow-circular-references: true  # 允许循环引用
   datasource:
     url: jdbc:mysql://124.223.99.166:3306/imitation-bilibili?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
@@ -59,6 +70,7 @@ minio:
 logging:
   level:
     io.juneqqq: DEBUG
+  config: classpath:logback-spring.xml
 
 rocketmq:
   name:

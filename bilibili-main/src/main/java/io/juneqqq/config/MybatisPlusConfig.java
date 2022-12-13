@@ -30,8 +30,6 @@ import java.time.LocalDateTime;
 @EnableTransactionManagement
 @MapperScan("io.juneqqq.*.mapper")
 public class MybatisPlusConfig implements MetaObjectHandler {
-
-
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();

@@ -1,8 +1,8 @@
 package io.juneqqq.util;
 
-import cn.hutool.core.codec.Base64Decoder;
 import com.alibaba.fastjson.JSONObject;
-import io.juneqqq.core.exception.CustomException;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,7 +68,7 @@ public class ImageUtil {
         log.debug("请求结束，总时间(s)为：" +( (System.currentTimeMillis() - start)/ 1000F));
         if(result.getBody().contains("error_msg")){
             log.error("错误信息：{}",result.getBody());
-            throw new CustomException("百度图像分割错误，信息如上");
+            throw new BusinessException(ErrorCodeEnum.THIRD_SERVICE_ERROR);
         }
         return result.getBody();
     }

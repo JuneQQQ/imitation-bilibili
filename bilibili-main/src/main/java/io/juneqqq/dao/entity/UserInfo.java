@@ -8,11 +8,12 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class UserInfo {
+public class UserInfo implements Serializable {
     @Id
     @Field(type = FieldType.Long)
     private Long id;

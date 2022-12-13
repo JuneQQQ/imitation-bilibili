@@ -4,13 +4,13 @@ package io.juneqqq.service.common.impl;
 import cn.hutool.core.lang.Assert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.juneqqq.config.PearlMinioClient;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 import io.juneqqq.dao.mapper.FileInfoMapper;
 import io.juneqqq.pojo.dto.request.MultipartUploadCreate;
-import io.juneqqq.core.entity.ResultCode;
 import io.juneqqq.constant.FileStatusEnum;
 import io.juneqqq.constant.CacheConstant;
 import io.juneqqq.dao.entity.FileInfo;
-import io.juneqqq.core.exception.CustomException;
 import io.juneqqq.pojo.dto.request.MultipartUploadRequest;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
 import io.juneqqq.pojo.dto.response.MultipartUploadCreateResponse;
@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -40,6 +41,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static io.juneqqq.core.exception.ErrorCodeEnum.MINIO_FILE_IO_ERROR;
+import static io.juneqqq.core.exception.ErrorCodeEnum.MINIO_UNKNOW_EXCEPTION;
 
 
 @Service("MinioFileServiceImpl")
@@ -81,8 +85,8 @@ public class MinioFileServiceImpl implements FileService {
     /**
      * 视频下载到本地
      */
-    public void download(String bucket,String objectName,File file){
-        minioHelper.download(file,objectName,bucket);
+    public void download(String bucket, String objectName, File file) {
+        minioHelper.download(file, objectName, bucket);
     }
 
 
@@ -98,13 +102,13 @@ public class MinioFileServiceImpl implements FileService {
             return minioHelper.uploadFile(file, bucket, hash);
         } catch (IOException e) {
             log.error("file upload error.", e);
-            throw new CustomException(ResultCode.FILE_IO_ERROR.getCode(), ResultCode.FILE_IO_ERROR.getMessage());
+            throw new BusinessException(ErrorCodeEnum.MINIO_FILE_IO_ERROR);
         } catch (InsufficientDataException e) {
             log.error("insufficient data throw exception", e);
-            throw new CustomException(ResultCode.MINIO_INSUFFICIENT_DATA.getCode(), ResultCode.MINIO_INSUFFICIENT_DATA.getMessage());
+            throw new BusinessException(ErrorCodeEnum.MINIO_INSUFFICIENT_DATA);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CustomException(ResultCode.UNKNOWN_ERROR.getCode(), ResultCode.UNKNOWN_ERROR.getMessage());
+            throw new BusinessException(ErrorCodeEnum.MINIO_UNKNOW_EXCEPTION);
         }
     }
 
@@ -158,19 +162,19 @@ public class MinioFileServiceImpl implements FileService {
                         .build();
             }
         }
-        throw new CustomException(ResultCode.UNKNOWN_ERROR.getCode(), ResultCode.UNKNOWN_ERROR.getMessage());
+        throw new BusinessException(ErrorCodeEnum.MINIO_UNKNOW_EXCEPTION);
     }
 
     @SneakyThrows
     private Long getFileIdByHash(MultipartUploadRequest mur) {
         FileInfo fileInfo = fileInfoMapper.selectOne(new LambdaQueryWrapper<>(FileInfo.class)
                 .select(FileInfo::getId).eq(FileInfo::getHash, mur.getHash()));
-        if (fileInfo == null){
+        if (fileInfo == null) {
             log.warn("Minio存在文件但数据库不存在？补偿数据库");
             StatObjectResponse response = getFileInfoFromMinio(mur.getBucket(), mur.getFinalName());
-            if(!response.object().equals(mur.getFinalName())){
-                remove(response.bucket(),response.object());
-                throw new CustomException("之前已经上传过，但文件名不一致，minio无法修改，故已删除minio文件，请重新上传");
+            if (!response.object().equals(mur.getFinalName())) {
+                remove(response.bucket(), response.object());
+                throw new BusinessException(ErrorCodeEnum.MINIO_FILE_NAME_NOT_MATCH_HASH);
             }
             fileInfo = FileInfo.builder()
                     .fileName(mur.getFileName())
@@ -286,10 +290,11 @@ public class MinioFileServiceImpl implements FileService {
             Result<Item> next;
             if (iterator.hasNext()) {
                 next = iterator.next();
-                if (iterator.hasNext())
-                    throw new CustomException("为什么这里根据hash查出来了不止一个文件？bucket:" +
-                            mur.getBucket() + ";hash:" +
-                            mur.getHash());
+                if (iterator.hasNext()) {
+                    log.error("为什么这里根据hash查出来了不止一个文件？bucket:{};hash:{}",
+                            mur.getBucket(), mur.getHash());
+                    throw new BusinessException(MINIO_UNKNOW_EXCEPTION);
+                }
                 fs.setStatus(FileStatusEnum.FILE_COMPLETELY_EXISTS);
                 return next;
             } else {
@@ -413,7 +418,7 @@ public class MinioFileServiceImpl implements FileService {
      */
     @SneakyThrows
     public StatObjectResponse getFileInfoFromMinio(String bucket, String objectName) {
-        return  client.statObject(StatObjectArgs.builder()
+        return client.statObject(StatObjectArgs.builder()
                 .bucket(bucket).
                 object(objectName).build()).get();
     }

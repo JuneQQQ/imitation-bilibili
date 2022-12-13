@@ -1,23 +1,18 @@
 package io.juneqqq.controller;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import io.juneqqq.core.entity.PageResult;
-import io.juneqqq.core.exception.CustomException;
-import io.juneqqq.pojo.dto.request.elasticsearch.UserSearchCondition;
-import io.juneqqq.pojo.dto.request.elasticsearch.VideoSearchCondition;
-import io.juneqqq.pojo.dto.response.elasticsearch.UserSearchResult;
-import io.juneqqq.pojo.dto.response.elasticsearch.VideoSearchResult;
+import com.alibaba.fastjson2.JSON;
+import io.juneqqq.core.auth.auth.ApiRouterConstant;
+import io.juneqqq.core.auth.auth.UserHolder;
+import io.juneqqq.pojo.dto.PageResult;
 import io.juneqqq.service.common.SearchService;
 import io.juneqqq.service.common.VideoService;
 
 import io.juneqqq.util.UserSupport;
 import io.juneqqq.dao.entity.*;
-import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mahout.cf.taste.common.TasteException;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
@@ -30,8 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestController
 @Slf4j
+@RestController
+@Tag(name = "VideoController", description = "视频模块")
+@RequestMapping(ApiRouterConstant.API_FRONT_VIDEO_URL_PREFIX)
 public class VideoController {
 
     @Resource
@@ -41,17 +38,6 @@ public class VideoController {
     private UserSupport userSupport;
     @Resource
     private SearchService elasticSearchService;
-
-
-    @Operation(description = "查询视频")
-    @GetMapping("search-videos")
-    public R<PageResult<VideoSearchResult>> searchVideo(
-            @ParameterObject VideoSearchCondition condition
-    ) {
-        PageResult<VideoSearchResult> contents = elasticSearchService.searchVideos(condition);
-        return new R<>(contents);
-    }
-
 
     /**
      * 视频投稿
@@ -64,8 +50,8 @@ public class VideoController {
         video.setUpdateTime(LocalDateTime.now());
 
         videoService.addVideos(video);
-        elasticSearchService.addVideo(video); // async
-        return new R<>(video.getId().toString());
+//        elasticSearchService.addVideo(video); // async
+        return R.ok(video.getId().toString());
     }
 
     /**
@@ -77,14 +63,14 @@ public class VideoController {
             Long no,
             @RequestParam(required = false) String partition) {
         PageResult<Video> result = videoService.pageListVideos(size, no, partition);
-        return new R<>(result);
+        return R.ok(result);
     }
 
     /**
      * 视频在线播放
      */
     @GetMapping("/video-slices")
-    public void viewVideoOnlineBySlices(
+    public R<Void> viewVideoOnlineBySlices(
             HttpServletRequest request,
             HttpServletResponse response,
             String bucket,
@@ -92,26 +78,27 @@ public class VideoController {
             Long size
     ) {
         videoService.viewVideoOnlineBySlices(request, response, bucket, objectName, size);
+        return R.ok();
     }
 
     /**
      * 点赞视频
      */
     @PostMapping("/video-likes")
-    public R<String> addVideoLike(@RequestParam Long videoId) {
+    public R<Void> addVideoLike(@RequestParam Long videoId) {
         Long userId = userSupport.getCurrentUserId();  // token 方法内抛出错误
         videoService.addVideoLike(userId, videoId);
-        return R.success();
+        return R.ok();
     }
 
     /**
      * 取消点赞视频
      */
     @DeleteMapping("/video-likes")
-    public R<String> deleteVideoLike(@RequestParam Long videoId) {
+    public R<Void> deleteVideoLike(@RequestParam Long videoId) {
         Long userId = userSupport.getCurrentUserId();
         videoService.deleteVideoLike(videoId, userId);
-        return R.success();
+        return R.ok();
     }
 
     /**
@@ -119,13 +106,8 @@ public class VideoController {
      */
     @GetMapping("/video-likes")
     public R<Map<String, Object>> getVideoLikes(@RequestParam Long videoId) {
-        Long userId = null;
-        try {
-            userId = userSupport.getCurrentUserId();
-        } catch (CustomException ignored) {
-        }
-        Map<String, Object> result = videoService.getVideoLikes(videoId, userId);
-        return new R<>(result);
+        Map<String, Object> result = videoService.getVideoLikes(videoId, UserHolder.getUserId());
+        return R.ok(result);
     }
 
 
@@ -133,20 +115,18 @@ public class VideoController {
      * 收藏视频
      */
     @PostMapping("/video-collections")
-    public R<String> addVideoCollection(@RequestBody VideoCollection videoCollection) {
-        Long userId = userSupport.getCurrentUserId();
-        videoService.addVideoCollection(videoCollection, userId);
-        return R.success();
+    public R<Void> addVideoCollection(@RequestBody VideoCollection videoCollection) {
+        videoService.addVideoCollection(videoCollection, UserHolder.getUserId());
+        return R.ok();
     }
 
     /**
      * 取消收藏视频
      */
     @DeleteMapping("/video-collections")
-    public R<String> deleteVideoCollection(@RequestParam Long videoId) {
-        Long userId = userSupport.getCurrentUserId();
-        videoService.deleteVideoCollection(videoId, userId);
-        return R.success();
+    public R<Void> deleteVideoCollection(@RequestParam Long videoId) {
+        videoService.deleteVideoCollection(videoId, UserHolder.getUserId());
+        return R.ok();
     }
 
     /**
@@ -154,23 +134,17 @@ public class VideoController {
      */
     @GetMapping("/video-collections")
     public R<Map<String, Object>> getVideoCollections(@RequestParam Long videoId) {
-        Long userId = null;
-        try {
-            userId = userSupport.getCurrentUserId();
-        } catch (Exception ignored) {
-        }
-        Map<String, Object> result = videoService.getVideoCollections(videoId, userId);
-        return new R<>(result);
+        Map<String, Object> result = videoService.getVideoCollections(videoId, UserHolder.getUserId());
+        return R.ok(result);
     }
 
     /**
      * 视频投币
      */
     @PostMapping("/video-coins")
-    public R<String> addVideoCoins(@RequestBody VideoCoin videoCoin) {
-        Long userId = userSupport.getCurrentUserId();
-        videoService.addVideoCoins(videoCoin, userId);
-        return R.success();
+    public R<Void> addVideoCoins(@RequestBody VideoCoin videoCoin) {
+        videoService.addVideoCoins(videoCoin, UserHolder.getUserId());
+        return R.ok();
     }
 
     /**
@@ -178,24 +152,18 @@ public class VideoController {
      */
     @GetMapping("/video-coins")
     public R<Map<String, Object>> getVideoCoins(@RequestParam Long videoId) {
-        Long userId = null;
-        try {
-            userId = userSupport.getCurrentUserId();
-        } catch (Exception ignored) {
-        }
-        Map<String, Object> result = videoService.getVideoCoins(videoId, userId);
-        return new R<>(result);
+        Map<String, Object> result = videoService.getVideoCoins(videoId, UserHolder.getUserId());
+        return R.ok(result);
     }
 
     /**
      * 添加视频评论
      */
     @PostMapping("/video-comments")
-    public R<String> addVideoComment(@RequestBody VideoComment videoComment) {
-        Long userId = userSupport.getCurrentUserId();
-        videoComment.setUserId(userId);
+    public R<Void> addVideoComment(@RequestBody VideoComment videoComment) {
+        videoComment.setUserId(UserHolder.getUserId());
         videoService.addVideoComment(videoComment);
-        return R.success();
+        return R.ok();
     }
 
     /**
@@ -206,7 +174,7 @@ public class VideoController {
                                                              @RequestParam Integer no,
                                                              @RequestParam Long videoId) {
         PageResult<VideoComment> result = videoService.pageListVideoComments(size, no, videoId);
-        return new R<>(result);
+        return R.ok(result);
     }
 
     /**
@@ -215,25 +183,18 @@ public class VideoController {
     @GetMapping("/video-details")
     public R<Map<String, Object>> getVideoDetails(@RequestParam Long videoId) {
         Map<String, Object> result = videoService.getVideoDetails(videoId);
-        return new R<>(result);
+        return R.ok(result);
     }
 
     /**
      * 添加视频观看记录
      */
     @PostMapping("/video-views")
-    public R<String> addVideoView(@RequestBody VideoView videoView,
-                                  HttpServletRequest request) {
-        Long userId;
-        try {
-            userId = userSupport.getCurrentUserId();  // userId
-            videoView.setUserId(userId);
-            videoService.addVideoView(videoView, request);
-        } catch (Exception e) {
-            log.debug("userId为null？{}", e.getMessage());
-            videoService.addVideoView(videoView, request);
-        }
-        return R.success();
+    public R<Void> addVideoView(@RequestBody VideoView videoView,
+                                HttpServletRequest request) {
+        videoView.setUserId(UserHolder.getUserId());
+        videoService.addVideoView(videoView, request);
+        return R.ok();
     }
 
     /**
@@ -242,36 +203,35 @@ public class VideoController {
     @GetMapping("/video-view-counts")
     public R<Integer> getVideoViewCounts(@RequestParam Long videoId) {
         Integer count = videoService.getVideoViewCounts(videoId);
-        return new R<>(count);
+        return R.ok(count);
     }
 
     /**
      * 视频内容推荐
      */
     @GetMapping("/recommendation/byUsers")
-    public R<List<Video>> recommendByUsers(Integer count) throws TasteException {
-        Long userId = userSupport.getCurrentUserId();
-        List<Video> list = videoService.recommendByUser(userId, count);
-        return new R<>(list);
+    public R<List<Video>> recommendByUsers(Integer count) {
+        List<Video> list = videoService.recommendByUser(UserHolder.getUserId(), count);
+        return R.ok(list);
     }
 
     /**
      * 视频内容推荐
      */
     @GetMapping("/recommendation/byContents")
-    public R<List<Video>> recommendByContents(Long videoId) throws TasteException {
-        Long userId = userSupport.getCurrentUserId();
-        List<Video> list = videoService.recommendByItem(userId, videoId, 5);
-        return new R<>(list);
+    public R<List<Video>> recommendByContents(Long videoId) {
+        List<Video> list = videoService.recommendByItem(UserHolder.getUserId()
+                , videoId, 5);
+        return R.ok(list);
     }
 
     /**
      * 视频帧截取生成黑白剪影
      */
     @GetMapping("/video-frames")
-    public R<List<VideoBinaryPicture>> captureVideoFrame(@RequestParam Long videoId) throws Exception {
+    public R<List<VideoBinaryPicture>> captureVideoFrame(@RequestParam Long videoId) {
         List<VideoBinaryPicture> list = videoService.convertVideoToImage(videoId);
-        return new R<>(list);
+        return R.ok(list);
     }
 
     /**
@@ -286,7 +246,7 @@ public class VideoController {
         params.put("videoTimestamp", videoTimestamp);
         params.put("frameNo", frameNo);
         List<VideoBinaryPicture> list = videoService.getVideoBinaryImages(params);
-        return new R<>(list);
+        return R.ok(list);
     }
 
     /**
@@ -295,17 +255,17 @@ public class VideoController {
     @GetMapping("/video-tags")
     public R<List<VideoTag>> getVideoTagsByVideoId(@RequestParam Long videoId) {
         List<VideoTag> list = videoService.getVideoTagsByVideoId(videoId);
-        return new R<>(list);
+        return R.ok(list);
     }
 
     /**
      * 删除视频标签
      */
     @DeleteMapping("/video-tags")
-    public R<String> deleteVideoTags(@RequestBody JSONObject params) {
+    public R<Void> deleteVideoTags(@RequestBody JSONObject params) {
         String tagIdList = params.getString("tagIdList");
         Long videoId = params.getLong("videoId");
-        videoService.deleteVideoTags(JSONArray.parseArray(tagIdList).toJavaList(Long.class), videoId);
-        return R.success();
+        videoService.deleteVideoTags(JSON.parseArray(tagIdList).toJavaList(Long.class), videoId);
+        return R.ok();
     }
 }

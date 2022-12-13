@@ -3,7 +3,11 @@ package io.juneqqq;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.util.RandomUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
+import co.elastic.clients.elasticsearch.core.bulk.UpdateOperation;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
@@ -41,18 +45,18 @@ class EsTest {
     void prepareData() {
         for (int i = 0; i < 100; i++) {
             EsUserInfoDto b = EsUserInfoDto.builder().
-                    id(RandomUtil.randomLong(0,1111111111))
+                    id(RandomUtil.randomLong(0, 1111111111))
                     .avatar(RandomUtil.randomString(20))
                     .createTime(LocalDateTime.now())
                     .updateTime(LocalDateTime.now())
                     .sign(RandomUtil.randomString(20))
-                    .userId(RandomUtil.randomLong(0,1111111111))
+                    .userId(RandomUtil.randomLong(0, 1111111111))
                     .birth(RandomUtil.randomDate(DateUtil.parseDate("2010-07-20"),
                             DateField.AM_PM, 0, 10000).toLocalDateTime().toLocalDate())
                     .gender(i % 2)
                     .nick("中国")
-                    .level(RandomUtil.randomInt(0,6))
-                    .fanCount(RandomUtil.randomInt(888,100000))
+                    .level(RandomUtil.randomInt(0, 6))
+                    .fanCount(RandomUtil.randomInt(888, 100000))
                     .isVip(RandomUtil.randomBoolean())
                     .build();
             userInfoDtoRepository.save(b);
@@ -60,18 +64,18 @@ class EsTest {
 
         for (int i = 0; i < 100; i++) {
             EsVideoDto b = EsVideoDto.builder().
-                    id(RandomUtil.randomLong(0,1222222222))
+                    id(RandomUtil.randomLong(0, 1222222222))
                     .cover(RandomUtil.randomString(20))
-                    .fileId(RandomUtil.randomLong(0,1222222222))
-                    .duration(RandomUtil.randomInt(0,1111111111))
+                    .fileId(RandomUtil.randomLong(0, 1222222222))
+                    .duration(RandomUtil.randomInt(0, 1111111111))
                     .title(RandomValueUtil.getRoad())
                     .createTime(LocalDateTime.now())
                     .updateTime(LocalDateTime.now())
-                    .userId(RandomUtil.randomLong(0,1222222222))
+                    .userId(RandomUtil.randomLong(0, 1222222222))
                     .nick("中国")
-                    .like(RandomUtil.randomInt(0,1111111111))
-                    .coin(RandomUtil.randomInt(0,1111111111))
-                    .collection(RandomUtil.randomInt(0,1111111111))
+                    .like(RandomUtil.randomInt(0, 1111111111))
+                    .coin(RandomUtil.randomInt(0, 1111111111))
+                    .collection(RandomUtil.randomInt(0, 1111111111))
                     .type(0)
                     .description(RandomValueUtil.getRoad())
                     .partition(0)
@@ -112,36 +116,27 @@ class EsTest {
     }
 
 
+    @Test
+    void load() {
+        EsUserInfoDto esUserInfoDto = userInfoDtoRepository.searchByUserId(410499013L);
+        System.out.println(esUserInfoDto);
+    }
+
 
     @Test
-    void load() throws IOException {
-//        SearchResponse<Video> video = elasticsearchClient.search(
-//                s -> {
-//                    SearchRequest.Builder searchBuilder = s.index("video");
-//                    // 构建检索条件
-//                    // 排序
-//                    return searchBuilder;
-//                },
-//                Video.class
-//        );
-//        System.out.println(video);
+    void testBatch(){
+        UpdateByQueryRequest.Builder builder = new UpdateByQueryRequest.Builder();
+
+//        BulkRequest.Builder builder = new BulkRequest.Builder();
+//        builder.operations(BulkOperation.of(a->{
+//            a.update(UpdateOperation.of(b->{
+//                b.
+//            }))
+//        }))
+//        elasticsearchClient.bulk();
     }
 
     @Resource
     private SearchService elasticSearchService;
 
-    @Test
-    void testSave() {
-        Video v = new Video();
-        v.setId(1L);
-        v.setUserId(1L);
-        v.setCover("ddd");
-        v.setDuration(123333);
-        v.setDescription("dasdasdas");
-        v.setType(1);
-        v.setTitle("asga");
-        v.setCreateTime(LocalDateTime.now());
-        v.setUpdateTime(LocalDateTime.now());
-        elasticSearchService.addVideo(v);
-    }
 }

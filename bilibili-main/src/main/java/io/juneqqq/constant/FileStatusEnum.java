@@ -1,5 +1,8 @@
 package io.juneqqq.constant;
 
+import lombok.Getter;
+
+@Getter
 public enum FileStatusEnum {
     FILE_COMPLETELY_EXISTS("文件已存在"),
     FILE_PARTLY_EXISTS("部分存在或不存在"),
@@ -11,9 +14,5 @@ public enum FileStatusEnum {
 
     FileStatusEnum(String message) {
         this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
     }
 }

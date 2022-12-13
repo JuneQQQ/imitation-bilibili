@@ -13,10 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 /**
- * 作家信息 缓存管理类
- *
- * @author xiongxiaoyang
- * @date 2022/5/12
+ * 用户信息 缓存管理类
  */
 @Component
 @Slf4j
@@ -25,11 +22,11 @@ public class UserInfoCacheManager {
     UserInfoMapper userInfoMapper;
 
     /**
-     * 查询作家信息，并放入缓存中
+     * 查询用户信息，并放入缓存中
      * unless = "#result == null"  不缓存空值
      */
     @Cacheable(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.USER_INFO_CACHE_NAME)
+            value = CacheConstant.USER_INFO_CACHE_NAME, key = "#userId")
     public CacheUserInfoDto getUserInfo(Long userId) {
         UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<>(UserInfo.class)
                 .eq(UserInfo::getUserId, userId));
@@ -44,10 +41,18 @@ public class UserInfoCacheManager {
      * 清除用户信息的缓存
      */
     @CacheEvict(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.USER_INFO_CACHE_NAME)
-    public void evictAuthorCache() {
+            value = CacheConstant.USER_INFO_CACHE_NAME,
+            beforeInvocation = true)
+    public void evictUserInfoCacheByUserId(Long userId) {
         // none
-        log.debug("用户缓存信息已删除~");
+        log.debug("用户缓存信息已删除~{}", userId);
     }
 
+    @CacheEvict(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
+            value = CacheConstant.USER_INFO_CACHE_NAME,
+            allEntries = true,
+            beforeInvocation = true)
+    public void evictUserInfoCacheAll() {
+        log.debug("所有用户缓存信息已删除~");
+    }
 }

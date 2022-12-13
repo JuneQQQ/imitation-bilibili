@@ -46,7 +46,7 @@ public class DanmuServiceImpl implements DanmuService {
      */
     public List<Danmu> getDanmus(Long videoId, String startTime, String endTime) {
 
-        String key = CacheConstant.DANMUA_CACHE_NAME + videoId;
+        String key = CacheConstant.DANMU_CACHE_NAME + videoId;
         String value = stringRedisTemplate.opsForValue().get(key);
         List<Danmu> list;
         // 缓存有数据
@@ -81,7 +81,7 @@ public class DanmuServiceImpl implements DanmuService {
     }
 
     public void addDanmusToRedis(Danmu danmu) {
-        String key = CacheConstant.DANMUA_CACHE_NAME + danmu.getVideoId();
+        String key = CacheConstant.DANMU_CACHE_NAME + danmu.getVideoId();
         String value = stringRedisTemplate.opsForValue().get(key);
         List<Danmu> list = new ArrayList<>();
         if (!StringUtil.isNullOrEmpty(value)) {

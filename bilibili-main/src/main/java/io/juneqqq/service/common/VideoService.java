@@ -1,7 +1,8 @@
 package io.juneqqq.service.common;
 
-import io.juneqqq.core.entity.PageResult;
+import io.juneqqq.pojo.dto.PageResult;
 import io.juneqqq.dao.entity.*;
+import io.juneqqq.dao.repository.esmodel.EsVideoDto;
 import io.juneqqq.pojo.dto.database.VideoLCC;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,20 +11,17 @@ import java.util.List;
 import java.util.Map;
 
 public interface VideoService {
+    List<EsVideoDto> selectBatchEsVideoDto(int current,int size);
     void addVideos(Video video);
     void addVideoComment(VideoComment videoComment);
-    PageResult<Video> pageListVideos(Long size, Long no, String partition);
+    PageResult<Video> pageListVideos(Long size, Long current, String partition);
     void viewVideoOnlineBySlices(HttpServletRequest request,
                                  HttpServletResponse response,
                                  String bucket, String objectName, Long size);
-
     void addVideoLike(Long userId, Long videoId);
-
     void deleteVideoLike(Long videoId, Long userId);
 
     Map<String, Object> getVideoLikes(Long videoId, Long userId);
-
-
     void addVideoCollection(VideoCollection videoCollection, Long userId);
 
     void deleteVideoCollection(Long videoId, Long userId);

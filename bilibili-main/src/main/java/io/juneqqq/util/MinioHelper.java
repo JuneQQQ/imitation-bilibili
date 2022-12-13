@@ -2,9 +2,9 @@ package io.juneqqq.util;
 
 
 import io.juneqqq.config.PearlMinioClient;
+import io.juneqqq.core.exception.BusinessException;
+import io.juneqqq.core.exception.ErrorCodeEnum;
 import io.juneqqq.pojo.dto.request.MultipartUploadCreate;
-import io.juneqqq.core.entity.ResultCode;
-import io.juneqqq.core.exception.CustomException;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
 import io.minio.*;
 import io.minio.errors.*;
@@ -19,13 +19,16 @@ import org.springframework.web.util.UriUtils;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import io.juneqqq.config.MinioConfiguration.MinioProperties;
+
 /**
  * @author juneqqq
  * @version 1.0
@@ -175,23 +178,23 @@ public class MinioHelper {
         try {
             return client.createMultipartUpload(multipartUploadCreate.getBucketName(), multipartUploadCreate.getRegion(), multipartUploadCreate.getObjectName(), multipartUploadCreate.getHeaders(), multipartUploadCreate.getExtraQueryParams());
         } catch (Exception e) {
-            log.error("获取上传编号失败", e);
-            throw new CustomException(ResultCode.UNKNOWN_ERROR.getCode(), e.getMessage());
+            log.error("获取上传编号失败，异常信息：{}", e.getMessage());
+            throw new BusinessException(ErrorCodeEnum.MINIO_FILE_IO_ERROR);
         }
     }
 
     /**
      * 合并分片
      *
-     * @param multipartUploadCreate
-     * @return
+     * @param multipartUploadCreate 传参DTO
+     * @return ObjectWriteResponse vo
      */
     public ObjectWriteResponse completeMultipartUpload(MultipartUploadCreate multipartUploadCreate) {
         try {
             return client.completeMultipartUpload(multipartUploadCreate.getBucketName(), multipartUploadCreate.getRegion(), multipartUploadCreate.getObjectName(), multipartUploadCreate.getUploadId(), multipartUploadCreate.getParts(), multipartUploadCreate.getHeaders(), multipartUploadCreate.getExtraQueryParams());
         } catch (Exception e) {
             log.error("合并分片失败", e);
-            throw new CustomException(ResultCode.UNKNOWN_ERROR.getCode(), e.getMessage());
+            throw new BusinessException(ErrorCodeEnum.MINIO_FILE_IO_ERROR);
         }
     }
 
@@ -212,7 +215,7 @@ public class MinioHelper {
             return client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.PUT).bucket(bucketName).object(objectName).expiry(60 * 60 * 24).extraQueryParams(queryParams).build());
         } catch (Exception e) {
             log.error("查询分片失败", e);
-            throw new CustomException(ResultCode.UNKNOWN_ERROR.getCode(), e.getMessage());
+            throw new BusinessException(ErrorCodeEnum.MINIO_FILE_IO_ERROR);
         }
     }
 

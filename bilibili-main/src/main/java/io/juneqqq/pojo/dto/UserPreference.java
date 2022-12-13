@@ -2,6 +2,9 @@ package io.juneqqq.pojo.dto;
 
 import lombok.Data;
 
+/**
+ * 协同推荐DTO
+ */
 @Data
 public class UserPreference {
     private Long userId;
@@ -9,10 +12,5 @@ public class UserPreference {
     private Long videoId;
 
     private Float value;
-
-//    @TableField(fill= FieldFill.INSERT)
-//    private LocalDateTime createTime;
-//    @TableField(fill= FieldFill.INSERT_UPDATE)
-//    private LocalDateTime updateTime;
 
 }

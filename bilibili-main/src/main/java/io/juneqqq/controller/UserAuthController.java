@@ -23,6 +23,6 @@ public class UserAuthController {
     public R<UserAuthorities> getUserAuthorities(){
         Long userId = userSupport.getCurrentUserId();
         UserAuthorities userAuthorities = userAuthService.getUserAuthorities(userId);
-        return new R<>(userAuthorities);
+        return R.ok(userAuthorities);
     }
 }
