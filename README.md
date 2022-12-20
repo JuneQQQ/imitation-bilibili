@@ -1,4 +1,17 @@
 # imitation-bilibili
+<p align="center">
+<a href='https://docs.spring.io/spring-boot/docs/3.0.0/reference/html'><img alt="Spring Boot 3" src="https://img.shields.io/badge/Spring%20Boot%203-%23000000.svg?logo=springboot"></a>
+<a href='https://staging-cn.vuejs.org'><img alt="Vue 3" src="https://img.shields.io/badge/Vue%203%20-%232b3847.svg?logo=vue.js"></a><br/>
+<a href='https://github.com/JuneQQQ/imitation-bilibili'><img alt="Github stars" src="https://img.shields.io/github/stars/JuneQQQ/imitation-bilibili?logo=github"></a>
+<a href='https://github.com/JuneQQQ/imitation-bilibili'><img alt="Github forks" src="https://img.shields.io/github/forks/JuneQQQ/imitation-bilibili?logo=github"></a>
+<a href="https://github.com/201206030/novel"><img src="https://visitor-badge.glitch.me/badge?page_id=JuneQQQ.imitation-bilibili" alt="visitors"></a>
+</p>
+
+[//]: # (<a href='https://github.com/JuneQQQ/imitation-bilibili'><img alt="Gitee stars" src="https://gitee.com/novel_dev_team/novel/badge/star.svg?theme=gitee"></a>)
+
+[//]: # (<a href='https://github.com/JuneQQQ/imitation-bilibili'><img alt="Gitee forks" src="https://gitee.com/novel_dev_team/novel/badge/fork.svg?theme=gitee"></a>)
+
+
 ## 项目简介
 `imitation-bilibili` 是一套基于当下前沿技术的的前后端分离的**仿B站**的的项目，旨在搭建起一个高性能的弹幕视频网站，目前仅包括后台系统，主要包括 用户/视频检索模块、文件模块、用户订阅、用户中心、评论模块、视频投稿、视频播放和实时防遮挡弹幕等主要功能模块。
 
