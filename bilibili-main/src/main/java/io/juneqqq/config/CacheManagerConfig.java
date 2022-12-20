@@ -1,6 +1,7 @@
 package io.juneqqq.config;
 
 import com.alibaba.fastjson.parser.ParserConfig;
+import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
 import com.alibaba.fastjson2.support.config.FastJsonConfig;
 import com.alibaba.fastjson2.support.spring.data.redis.FastJsonRedisSerializer;
@@ -68,16 +69,15 @@ public class CacheManagerConfig {
         FastJsonRedisSerializer<Object> serializer = new FastJsonRedisSerializer<>(Object.class);
         FastJsonConfig fastJsonConfig = serializer.getFastJsonConfig();
         fastJsonConfig.setWriterFeatures(JSONWriter.Feature.WriteClassName);
-//        fastJsonConfig.setReaderFeatures(JSONReader.Feature.SupportAutoType); // 完全支持反序列化有类型安全问题
+        fastJsonConfig.setReaderFeatures(JSONReader.Feature.SupportAutoType); // 完全支持反序列化有类型安全问题
         // 指定可以反序列化的白名单
-        ParserConfig.getGlobalInstance().addAccept(mainClassPath.substring(0, mainClassPath.lastIndexOf(".") + 1));
+//        ParserConfig.getGlobalInstance().addAccept(mainClassPath.substring(0, mainClassPath.lastIndexOf(".") + 1));
 
-        // 整体配置
+        // 默认配置
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration
                 .defaultCacheConfig()
-//                .disableCachingNullValues()   // 禁用空值缓存
                 .prefixCacheNameWith(CacheConstant.REDIS_CACHE_PREFIX)
-                .computePrefixWith(n -> n + ":")   // 单冒号而不是双冒号
+//                .computePrefixWith(n -> n + ":")   // 单冒号而不是双冒号
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
                         .fromSerializer(serializer));
 
@@ -88,6 +88,9 @@ public class CacheManagerConfig {
             if (Objects.equals(c.getCacheType(), CacheConstant.CACHE_TYPE_REDIS)
                     && c.getTtl() > 0) {
                 cacheMap.put(c.getName(), defaultCacheConfig
+                        .prefixCacheNameWith(CacheConstant.REDIS_CACHE_PREFIX)
+                        .serializeValuesWith(RedisSerializationContext.SerializationPair
+                                .fromSerializer(serializer))
                         .entryTtl(Duration.ofSeconds(c.getTtl())));
             }
         }

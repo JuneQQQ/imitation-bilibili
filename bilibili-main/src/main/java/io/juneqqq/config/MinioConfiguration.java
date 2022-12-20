@@ -46,11 +46,6 @@ public class MinioConfiguration {
 
         private String defaultBucket;
 
-        private String downloadUri;
-
-
-        private String path;
-
     }
 
 }

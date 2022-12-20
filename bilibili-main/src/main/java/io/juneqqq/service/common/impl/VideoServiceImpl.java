@@ -185,7 +185,6 @@ public class VideoServiceImpl implements VideoService {
                 while ((len = fis.read(buf)) != -1) {
                     os.write(buf, 0, (int) len);
                     total += len;
-                    log.debug("I'm reading/writing!");
                 }
                 log.debug("total:" + total / 1024 / 1024 + "M");
             } catch (IOException e) {

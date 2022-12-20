@@ -34,6 +34,10 @@ public class CacheConstant {
      * 视频信息缓存 -> Video
      */
     public static final String VIDEO_INFO_CACHE_NAME = "video:video-info-cache";
+    /**
+     * 弹幕信息缓存 -> Danmu
+     */
+    public static final String DANMU_CACHE_NAME = "danmu:danmu-cache";
 
     /**
      * 用户 refreshToken ，目前是手动控制，所以需要加前缀
@@ -48,7 +52,6 @@ public class CacheConstant {
      */
     public static final String FILE_SIZE_CACHE_NAME = "file:size";
     public static final String USER_SUBSCRIBED_CACHE_NAME = "user:subscribed";
-    public static final String DANMU_CACHE_NAME = "danmu:video";
 
     /**
      * 缓存过期时间和最大数量配置，仅作用于

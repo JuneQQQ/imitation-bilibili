@@ -1,11 +1,14 @@
 package io.juneqqq.service.common.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import io.juneqqq.cache.DanmuCacheManager;
 import io.juneqqq.dao.mapper.DanmuMapper;
 import io.juneqqq.dao.entity.Danmu;
 import io.juneqqq.constant.CacheConstant;
+import io.juneqqq.pojo.dto.cache.CacheDanmuDto;
 import io.juneqqq.service.common.DanmuService;
 import io.netty.util.internal.StringUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,13 +26,11 @@ import java.util.Map;
 
 @Service
 public class DanmuServiceImpl implements DanmuService {
-
-
     @Resource
     private DanmuMapper danmuMapper;
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private DanmuCacheManager danmuCacheManager;
 
     public void addDanmu(Danmu danmu) {
         danmuMapper.addDanmu(danmu);
@@ -46,49 +47,14 @@ public class DanmuServiceImpl implements DanmuService {
      */
     public List<Danmu> getDanmus(Long videoId, String startTime, String endTime) {
 
-        String key = CacheConstant.DANMU_CACHE_NAME + videoId;
-        String value = stringRedisTemplate.opsForValue().get(key);
-        List<Danmu> list;
+        List<Danmu> list = new ArrayList<>();
         // 缓存有数据
-        if (!StringUtil.isNullOrEmpty(value)) {
-            list = JSONArray.parseArray(value, Danmu.class);
-            if (!StringUtil.isNullOrEmpty(startTime)
-                    && !StringUtil.isNullOrEmpty(endTime)) {
-
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                LocalDateTime startDate = LocalDateTime.parse(startTime, dtf);
-                LocalDateTime endDate = LocalDateTime.parse(endTime, dtf);
-                List<Danmu> childList = new ArrayList<>();
-                for (Danmu danmu : list) {
-                    LocalDateTime createTime = danmu.getCreateTime();
-                    if (createTime.isAfter(startDate) && createTime.isBefore(endDate)) {
-                        childList.add(danmu);
-                    }
-                }
-                list = childList;
-            }
-        } else {
-            // 缓存没数据，查库！
-            Map<String, Object> params = new HashMap<>();
-            params.put("videoId", videoId);
-            params.put("startTime", startTime);
-            params.put("endTime", endTime);
-            list = danmuMapper.getDanmus(params);
-            // 存 redis
-            stringRedisTemplate.opsForValue().set(key, JSONObject.toJSONString(list));
+        List<CacheDanmuDto> danmuList = danmuCacheManager.getDanmuList(videoId, startTime, endTime);
+        for (CacheDanmuDto cacheDanmuDto : danmuList) {
+            Danmu danmu = new Danmu();
+            BeanUtil.copyProperties(cacheDanmuDto,danmu);
+            list.add(danmu);
         }
         return list;
     }
-
-    public void addDanmusToRedis(Danmu danmu) {
-        String key = CacheConstant.DANMU_CACHE_NAME + danmu.getVideoId();
-        String value = stringRedisTemplate.opsForValue().get(key);
-        List<Danmu> list = new ArrayList<>();
-        if (!StringUtil.isNullOrEmpty(value)) {
-            list = JSONArray.parseArray(value, Danmu.class);
-        }
-        list.add(danmu);
-        stringRedisTemplate.opsForValue().set(key, JSONObject.toJSONString(list));
-    }
-
 }

@@ -33,18 +33,7 @@ public class DanmuController {
                                     String endTime) {
 
 
-        List<Danmu> list;
-        //判断当前是游客模式还是用户登录模式
-        Long userId = UserHolder.getUserId();
-        if (userId != null) {
-            //若是用户登录模式，则允许用户进行时间段筛选
-            list = danmuService.getDanmus(videoId, startTime, endTime);
-        } else {
-            //若为游客模式，则不允许用户进行时间段筛选
-            list = danmuService.getDanmus(videoId, null, null);
-        }
-
-
+        List<Danmu> list = danmuService.getDanmus(videoId, startTime, endTime);
         return R.ok(list);
     }
 }

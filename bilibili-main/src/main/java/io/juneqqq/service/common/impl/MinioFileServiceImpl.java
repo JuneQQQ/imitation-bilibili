@@ -353,7 +353,7 @@ public class MinioFileServiceImpl implements FileService {
             log.debug("fileId is:" + fileInfo.getId());
 
             return FileUploadResponse.builder()
-                    .url(minioHelper.minioProperties.getDownloadUri() + "/" +
+                    .url(minioHelper.minioProperties.getEndpoint() + "/" +
                             mur.getBucket() + "/" + mur.getFinalName())
                     .fileId(String.valueOf(fileInfo.getId()))   // 前端Number最长是16位 比long最大值小
                     .build();

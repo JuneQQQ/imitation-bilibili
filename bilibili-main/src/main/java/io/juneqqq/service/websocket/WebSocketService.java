@@ -109,8 +109,6 @@ public class WebSocketService {
                     logger.debug("即将保存弹幕到database&redis：{}", danmu);
                     // 异步存库
                     danmuService.asyncAddDanmu(danmu);
-                    // 存redis
-                    danmuService.addDanmusToRedis(danmu);
                 }
             } catch (Exception e) {
                 logger.error("弹幕接收出现问题，异常打印如下：{}",e.getMessage());
