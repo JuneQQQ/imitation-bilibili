@@ -133,7 +133,7 @@ public class RocketMQConfig {
         // 设置NameServer的地址
         consumer.setNamesrvAddr(nameServerAddr);
         // 订阅一个或者多个Topic，以及Tag来过滤需要消费的消息
-        consumer.subscribe(RocketMQConstant.TOPIC_DANMUS, "*");
+        consumer.subscribe(RocketMQConstant.TOPIC_DANMU, "*");
         // 注册回调实现类来处理从broker拉取回来的消息
         consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override

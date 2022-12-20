@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * JWT 组件
  */
 @ConditionalOnProperty("system.jwt.secret")
-@Component
+@Component("jwtUtils")
 @Slf4j
 public class JwtUtils {
 
@@ -91,8 +91,5 @@ public class JwtUtils {
         }
         // what happened?
         throw new BusinessException(ErrorCodeEnum.SYSTEM_ERROR);
-    }
-
-    public void deleteToken() {
     }
 }

@@ -77,6 +77,11 @@ public enum ErrorCodeEnum {
     USER_LOGIN_EXPIRED("A0230", "用户登录已过期"),
 
     /**
+     * 没有token
+     */
+    NO_TOKEN("A0231", " 没有token"),
+
+    /**
      * 访问未授权
      */
     USER_UN_AUTH("A0301", "访问未授权"),

@@ -1,11 +1,10 @@
 package io.juneqqq.service.websocket;
 
-import cn.hutool.core.lang.Pair;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import io.juneqqq.constant.RocketMQConstant;
+import io.juneqqq.core.auth.auth.UserHolder;
 import io.juneqqq.dao.entity.Danmu;
 import io.juneqqq.service.common.DanmuService;
-import io.juneqqq.util.UserSupport;
 import io.juneqqq.util.RocketMQUtil;
 import io.netty.util.internal.StringUtil;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -53,9 +52,8 @@ public class WebSocketService {
 
     @OnOpen
     public void openConnection(Session session, @PathParam("token") String token) {
-        UserSupport userSupport = (UserSupport) APPLICATION_CONTEXT.getBean("userSupport");
-        Pair<Long, String> pair = userSupport.verifyToken(token);
-        this.userId = pair.getKey();
+        // websocket没有请求头
+        this.userId = UserHolder.getUserId(token);
         this.sessionId = session.getId();
         this.session = session;
         if (ONLINE_SESSION_MAP.containsKey(sessionId)) {
@@ -75,19 +73,19 @@ public class WebSocketService {
 
     @OnClose
     public void closeConnection(Session session) {
-        logger.info("Session：" + session);
-        logger.info("SessionId：" + session.getId());
+        logger.info("Session：{}", session);
+        logger.info("SessionId：{}", session.getId());
 
         if (ONLINE_SESSION_MAP.containsKey(sessionId)) {
             ONLINE_SESSION_MAP.remove(sessionId);
             ONLINE_COUNT.getAndDecrement();
         }
-        logger.info("用户退出：" + sessionId + "当前在线人数为：" + ONLINE_COUNT.get());
+        logger.debug("用户退出：{},当前在线人数为：{}", sessionId, ONLINE_COUNT.get());
     }
 
     @OnMessage
     public void onMessage(String message) {
-        logger.info("用户信息：" + sessionId + "，报文：" + message);
+        logger.debug("用户信息：{},报文：{}", sessionId, message);
         if (!StringUtil.isNullOrEmpty(message)) {
             try {
                 //群发消息
@@ -99,15 +97,14 @@ public class WebSocketService {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("message", message);
                     jsonObject.put("sessionId", webSocketService.getSessionId());
-                    Message msg = new Message(RocketMQConstant.TOPIC_DANMUS, jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
+                    Message msg = new Message(RocketMQConstant.TOPIC_DANMU, jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
                     RocketMQUtil.asyncSendMsg(danmusProducer, msg);
                 }
-                logger.debug("============>here,,,{}", this.userId);
                 // 当用户已登录时
                 if (this.userId != null) {
                     Danmu danmu = JSONObject.parseObject(message, Danmu.class);
                     danmu.setUserId(userId);
-                    DanmuService danmuService = (DanmuService) APPLICATION_CONTEXT.getBean("danmuService");
+                    DanmuService danmuService = (DanmuService) APPLICATION_CONTEXT.getBean("danmuServiceImpl");
                     // @Async + @EnableAsync
                     logger.debug("即将保存弹幕到database&redis：{}", danmu);
                     // 异步存库
@@ -116,7 +113,7 @@ public class WebSocketService {
                     danmuService.addDanmusToRedis(danmu);
                 }
             } catch (Exception e) {
-                logger.error("弹幕接收出现问题，异常打印如下：");
+                logger.error("弹幕接收出现问题，异常打印如下：{}",e.getMessage());
                 e.printStackTrace();
             }
         }

@@ -3,6 +3,7 @@ package io.juneqqq.core.filter;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.juneqqq.config.XssProperties;
 import io.juneqqq.core.wrapper.XssHttpServletRequestWrapper;
+import io.juneqqq.pojo.dto.PageResult;
 import jakarta.annotation.Resource;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
@@ -34,35 +35,21 @@ public class XssFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
-        FilterChain filterChain) throws IOException, ServletException {
+                         FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
-        if (handleExcludeUrl(req)) {
-            filterChain.doFilter(servletRequest, servletResponse);
-            return;
+        String url = req.getServletPath();
+        for (String exclude : xssProperties.excludes()) {
+            if (url.contains(exclude)) {
+                filterChain.doFilter(servletRequest, servletResponse);
+                return;
+            }
         }
         // exclusive url里没有和当前url匹配的，那么就走wrapper逻辑
         XssHttpServletRequestWrapper xssRequest = new XssHttpServletRequestWrapper(
-            (HttpServletRequest) servletRequest);
+                (HttpServletRequest) servletRequest);
         filterChain.doFilter(xssRequest, servletResponse);
     }
 
-    /**
-     * 不做 xss filter 的接口
-     */
-    private boolean handleExcludeUrl(HttpServletRequest request) {
-        if (CollectionUtils.isEmpty(xssProperties.excludes())) {
-            return false;
-        }
-        String url = request.getServletPath();
-        for (String pattern : xssProperties.excludes()) {
-            Pattern p = Pattern.compile("^" + pattern);
-            Matcher m = p.matcher(url);
-            if (m.find()) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public void destroy() {

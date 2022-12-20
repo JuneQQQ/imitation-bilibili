@@ -62,9 +62,6 @@ public class UserServiceImpl implements UserService {
     @Resource
     private UserInfoDtoRepository userInfoDtoRepository;
     @Resource
-    private VideoDtoRepository videoDtoRepository;
-
-    @Resource
     private UserFollowingService userFollowingService;
 
     @Resource

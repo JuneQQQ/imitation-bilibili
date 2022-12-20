@@ -1,6 +1,7 @@
 package io.juneqqq.controller;
 
 
+import io.juneqqq.core.auth.auth.UserHolder;
 import io.juneqqq.dao.entity.R;
 import io.juneqqq.core.auth.UserAuthorities;
 import io.juneqqq.service.common.UserAuthService;
@@ -21,8 +22,7 @@ public class UserAuthController {
 
     @GetMapping("/user-authorities")
     public R<UserAuthorities> getUserAuthorities(){
-        Long userId = userSupport.getCurrentUserId();
-        UserAuthorities userAuthorities = userAuthService.getUserAuthorities(userId);
+        UserAuthorities userAuthorities = userAuthService.getUserAuthorities(UserHolder.getUserId());
         return R.ok(userAuthorities);
     }
 }

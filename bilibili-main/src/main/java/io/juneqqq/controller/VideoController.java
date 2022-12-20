@@ -13,6 +13,7 @@ import io.juneqqq.util.UserSupport;
 import io.juneqqq.dao.entity.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
@@ -44,8 +45,7 @@ public class VideoController {
      */
     @PostMapping("/videos")
     public R<String> addVideos(@RequestBody Video video) {
-        Long userId = userSupport.getCurrentUserId();
-        video.setUserId(userId);
+        video.setUserId(UserHolder.getUserId());
         video.setCreateTime(LocalDateTime.now());
         video.setUpdateTime(LocalDateTime.now());
 
@@ -69,8 +69,8 @@ public class VideoController {
     /**
      * 视频在线播放
      */
-    @GetMapping("/video-slices")
-    public R<Void> viewVideoOnlineBySlices(
+    @GetMapping(value = "/video-slices")
+    public void viewVideoOnlineBySlices(
             HttpServletRequest request,
             HttpServletResponse response,
             String bucket,
@@ -78,7 +78,6 @@ public class VideoController {
             Long size
     ) {
         videoService.viewVideoOnlineBySlices(request, response, bucket, objectName, size);
-        return R.ok();
     }
 
     /**
@@ -86,8 +85,7 @@ public class VideoController {
      */
     @PostMapping("/video-likes")
     public R<Void> addVideoLike(@RequestParam Long videoId) {
-        Long userId = userSupport.getCurrentUserId();  // token 方法内抛出错误
-        videoService.addVideoLike(userId, videoId);
+        videoService.addVideoLike(UserHolder.getUserId(), videoId);
         return R.ok();
     }
 
@@ -96,8 +94,7 @@ public class VideoController {
      */
     @DeleteMapping("/video-likes")
     public R<Void> deleteVideoLike(@RequestParam Long videoId) {
-        Long userId = userSupport.getCurrentUserId();
-        videoService.deleteVideoLike(videoId, userId);
+        videoService.deleteVideoLike(videoId, UserHolder.getUserId());
         return R.ok();
     }
 

@@ -17,9 +17,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Resource
     FlowLimitInterceptor flowLimitInterceptor;
-    //    @Resource FileInterceptor fileInterceptor;
-//    @Resource
-//    TokenParseInterceptor tokenParseInterceptor;
     @Resource
     AuthInterceptor authInterceptor;
 
@@ -47,12 +44,13 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         ApiRouterConstant.API_FRONT_USER_URL_PREFIX + "/register",
                         ApiRouterConstant.API_FRONT_USER_URL_PREFIX + "/login",
+                        ApiRouterConstant.API_FRONT_USER_URL_PREFIX + "/rsa-pks",
                         ApiRouterConstant.API_ADMIN_URL_PREFIX + "/login")
                 .order(2);
 
         // Token 解析拦截器
+        // 可以做token黑名单
 //        registry.addInterceptor(tokenParseInterceptor)
-//                // 拦截小说内容查询接口，需要解析 token 以判断该用户是否有权阅读该章节（付费章节是否已购买）
 //                .addPathPatterns(ApiRouterConstant.API_FRONT_BOOK_URL_PREFIX + "/content/*")
 //                .order(3);
 

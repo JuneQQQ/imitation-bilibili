@@ -17,17 +17,16 @@ public class FrontAuthStrategy implements AuthStrategy {
 
     @Resource
     JwtUtils jwtUtils;
-
-
     @Resource
     UserInfoCacheManager userInfoCacheManager;
-
     /**
      * 不需要 token 认证的接口，也可以在 InterceptorConfig 配置
      */
     private static final List<String> EXCLUDE_PREFIX_URI = List.of(
-            // 放行 search 接口
-            ApiRouterConstant.API_FRONT_SEARCH_URL_PREFIX
+            ApiRouterConstant.API_FRONT_SEARCH_URL_PREFIX, // 放行 search 接口
+            // 测试方便，视频相关接口全部放开
+            ApiRouterConstant.API_FRONT_RESOURCE_URL_PREFIX,
+            ApiRouterConstant.API_FRONT_VIDEO_URL_PREFIX
     );
 
     @Override

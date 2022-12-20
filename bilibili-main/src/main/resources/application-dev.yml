@@ -4,8 +4,8 @@ system:
   xss:
     enabled: true
     excludes:
-      - /system/notice/*
-      - /test/*
+      - /system/notice
+      - /video-slices
   jwt:
     secret: E66559580A1ADF48CDD928516062F12F
     expire-seconds: 30000000

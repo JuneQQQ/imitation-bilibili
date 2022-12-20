@@ -34,7 +34,7 @@ public interface AuthStrategy {
                          String token) {
         if (!StringUtils.hasText(token)) {
             // token 为空
-            throw new BusinessException(ErrorCodeEnum.USER_LOGIN_EXPIRED);
+            throw new BusinessException(ErrorCodeEnum.NO_TOKEN);
         }
         Long userId = jwtUtils.parseToken(token, SystemConfigConstant.BILIBILI_FRONT_KEY);
         CacheUserInfoDto userInfo = userInfoCacheManager.getUserInfo(userId);

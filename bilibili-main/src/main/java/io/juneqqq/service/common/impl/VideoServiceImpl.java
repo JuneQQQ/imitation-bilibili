@@ -169,7 +169,7 @@ public class VideoServiceImpl implements VideoService {
         response.setHeader("Content-Range", contentRange);
         response.setContentLength((int) len);
         response.setHeader("Accept-Ranges", "bytes");
-        response.setHeader("Content-Type", "video/mp4");
+        response.setHeader("Content-Type", "octet/stream");
         response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
 
         // A timeout exceeded while waiting to proceed with the request, please reduce your request rate
