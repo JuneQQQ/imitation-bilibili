@@ -1,10 +1,12 @@
 package io.juneqqq.cache;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alicp.jetcache.anno.CacheInvalidate;
+import com.alicp.jetcache.anno.CacheType;
+import com.alicp.jetcache.anno.Cached;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.juneqqq.constant.CacheConstant;
-import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.dao.mapper.UserInfoMapper;
+import io.juneqqq.pojo.dao.entity.UserInfo;
+import io.juneqqq.pojo.dao.mapper.UserInfoMapper;
 import io.juneqqq.pojo.dto.cache.CacheUserInfoDto;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +27,11 @@ public class UserInfoCacheManager {
      * 查询用户信息，并放入缓存中
      * unless = "#result == null"  不缓存空值
      */
-    @Cacheable(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.USER_INFO_CACHE_NAME, key = "#userId")
+//    @Cacheable(
+//            cacheManager = CacheConstant.CACHE_TYPE_REDIS_AND_CAFFEINE,
+//            cacheNames = CacheConstant.USER_INFO,
+//            key = "#userId")
+    @Cached(name = CacheConstant.USER_INFO, expire = 3600, cacheType = CacheType.REMOTE, key = "#userId")
     public CacheUserInfoDto getUserInfo(Long userId) {
         UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<>(UserInfo.class)
                 .eq(UserInfo::getUserId, userId));
@@ -40,19 +45,10 @@ public class UserInfoCacheManager {
     /**
      * 清除用户信息的缓存
      */
-    @CacheEvict(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.USER_INFO_CACHE_NAME,
-            beforeInvocation = true)
+    @CacheInvalidate(name = CacheConstant.USER_INFO, key = "#userId")
     public void evictUserInfoCacheByUserId(Long userId) {
         // none
         log.debug("用户缓存信息已删除~{}", userId);
     }
 
-    @CacheEvict(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.USER_INFO_CACHE_NAME,
-            allEntries = true,
-            beforeInvocation = true)
-    public void evictUserInfoCacheAll() {
-        log.debug("所有用户缓存信息已删除~");
-    }
 }

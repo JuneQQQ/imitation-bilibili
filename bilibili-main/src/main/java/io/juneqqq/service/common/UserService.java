@@ -1,9 +1,9 @@
 package io.juneqqq.service.common;
 
 import io.juneqqq.pojo.dto.PageResult;
-import io.juneqqq.dao.entity.User;
-import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
+import io.juneqqq.pojo.dao.entity.User;
+import io.juneqqq.pojo.dao.entity.UserInfo;
+import io.juneqqq.pojo.dao.repository.esmodel.EsUserInfoDto;
 import io.juneqqq.pojo.dto.request.LoginUserDtoReq;
 import io.juneqqq.pojo.dto.response.LoginUserDtoResp;
 

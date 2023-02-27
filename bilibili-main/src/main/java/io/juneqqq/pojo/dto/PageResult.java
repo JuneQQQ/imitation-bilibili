@@ -17,13 +17,13 @@ public record PageResult<T>(
         @Schema(description = "分页数据集") List<T> list,
         @Schema(description = "整块自定义数据") T data
 ) {
-    public PageResult(long total, long current, long size, List<T> list, T data) {
-        this.total = total;
-        this.current = current;
-        this.size = size;
-        this.list = list;
-        this.data = data;
-    }
+//    public PageResult(long total, long current, long size, List<T> list, T data) {
+//        this.total = total;
+//        this.current = current;
+//        this.size = size;
+//        this.list = list;
+//        this.data = data;
+//    }
 
     public static <T> PageResult<T> of(long current, long size, long total, List<T> list) {
         return new PageResult<>(total, current, size, list, null);

@@ -30,7 +30,6 @@ public class MinioConfiguration {
     @Component
     @ConfigurationProperties(prefix = "minio")
     public static class MinioProperties {
-
         /**
          * 连接地址
          */

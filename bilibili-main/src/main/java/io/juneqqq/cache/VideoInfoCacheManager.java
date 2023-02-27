@@ -1,8 +1,10 @@
 package io.juneqqq.cache;
 
 import cn.hutool.core.bean.BeanUtil;
-import io.juneqqq.constant.CacheConstant;
-import io.juneqqq.dao.entity.Video;
+import com.alicp.jetcache.anno.CacheInvalidate;
+import com.alicp.jetcache.anno.CacheType;
+import com.alicp.jetcache.anno.Cached;
+import io.juneqqq.pojo.dao.entity.Video;
 import io.juneqqq.pojo.dto.cache.CacheVideoInfoDto;
 import io.juneqqq.pojo.dto.database.VideoLCC;
 import io.juneqqq.service.common.VideoService;
@@ -28,8 +30,9 @@ public class VideoInfoCacheManager {
      * 查询用户信息，并放入缓存中
      * unless = "#result == null"  不缓存空值
      */
-    @Cacheable(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.VIDEO_INFO_CACHE_NAME)
+//    @Cacheable(cacheManager = CacheConstant.REMOTE,
+//            value = CacheConstant.VIDEO_INFO)
+    @Cached(name = CacheConstant.VIDEO_INFO, expire = 3600, cacheType = CacheType.REMOTE, key = "#userId")
     public CacheVideoInfoDto getVideoInfo(Long videoId) {
         VideoLCC videoLCC = videoService.getVideoLCC(videoId);
         Video dbVideo = videoService.getVideoById(videoId);
@@ -50,9 +53,10 @@ public class VideoInfoCacheManager {
     /**
      * 清除视频信息的缓存
      */
-    @CacheEvict(cacheManager = CacheConstant.CACHE_TYPE_REDIS,
-            value = CacheConstant.VIDEO_INFO_CACHE_NAME)
-    public void evictVideoInfoCache() {
+//    @CacheEvict(cacheManager = CacheConstant.REMOTE,
+//            value = CacheConstant.VIDEO_INFO)
+    @CacheInvalidate(name = CacheConstant.VIDEO_INFO, key = "#videoId")
+    public void evictVideoInfoCache(Long videoId) {
         // none
         log.debug("视频缓存信息已删除~");
     }

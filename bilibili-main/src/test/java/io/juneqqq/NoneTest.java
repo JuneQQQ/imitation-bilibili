@@ -6,13 +6,10 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.alibaba.fastjson2.JSONReader;
-import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
-import io.juneqqq.pojo.dto.cache.CacheUserInfoDto;
+import io.juneqqq.pojo.dao.entity.UserInfo;
+import io.juneqqq.pojo.dao.repository.esmodel.EsUserInfoDto;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

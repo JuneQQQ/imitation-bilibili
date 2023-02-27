@@ -1,6 +1,6 @@
 package io.juneqqq.service.common.impl;
 
-import io.juneqqq.dao.mapper.AuthRoleElementOperationMapper;
+import io.juneqqq.pojo.dao.mapper.AuthRoleElementOperationMapper;
 import io.juneqqq.core.auth.AuthRoleElementOperation;
 import io.juneqqq.service.common.AuthRoleElementOperationService;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package io.juneqqq.service.common;
 
-import io.juneqqq.dao.entity.FileInfo;
+import io.juneqqq.pojo.dao.entity.FileInfo;
 import io.juneqqq.pojo.dto.request.MultipartUploadRequest;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
 import io.juneqqq.pojo.dto.response.MultipartUploadCreateResponse;

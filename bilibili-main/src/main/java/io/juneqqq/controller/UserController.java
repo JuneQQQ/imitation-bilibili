@@ -2,8 +2,8 @@ package io.juneqqq.controller;
 
 import io.juneqqq.core.auth.auth.ApiRouterConstant;
 import io.juneqqq.core.auth.auth.UserHolder;
+import io.juneqqq.pojo.dao.entity.*;
 import io.juneqqq.pojo.dto.PageResult;
-import io.juneqqq.dao.entity.*;
 import io.juneqqq.pojo.dto.request.LoginUserDtoReq;
 import io.juneqqq.pojo.dto.response.LoginUserDtoResp;
 import io.juneqqq.service.common.UserFollowingService;
@@ -12,12 +12,12 @@ import io.juneqqq.service.common.UserService;
 import io.juneqqq.util.RSAUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
 
@@ -76,7 +76,7 @@ public class UserController {
      * 如果想要真正无效，可以设置JWT黑名单
      */
     @Operation(summary = "用户登录接口")
-    @PostMapping("/logout")
+    @RequestMapping("/logout")
     public R<Void> logout(HttpServletRequest request) {
         userService.logout(UserHolder.getUserId(), request.getHeader(HTTP_AUTH_HEADER_NAME));
         return R.ok();

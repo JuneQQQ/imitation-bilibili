@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="io.juneqqq.dao.mapper.AuthRoleElementOperationMapper">
+<mapper namespace="io.juneqqq.pojo.dao.mapper.AuthRoleElementOperationMapper">
 
     <resultMap id="AuthElementOperationResultMap" type="io.juneqqq.core.auth.AuthRoleElementOperation">
         <id column="roleId" property="roleId"/>

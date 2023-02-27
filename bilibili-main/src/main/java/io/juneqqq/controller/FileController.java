@@ -1,11 +1,11 @@
 package io.juneqqq.controller;
 
-import io.juneqqq.constant.CacheConstant;
+import io.juneqqq.cache.CacheConstant;
 import io.juneqqq.core.auth.auth.ApiRouterConstant;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
-import io.juneqqq.dao.entity.FileInfo;
-import io.juneqqq.dao.entity.R;
+import io.juneqqq.pojo.dao.entity.FileInfo;
+import io.juneqqq.pojo.dao.entity.R;
 import io.juneqqq.pojo.dto.request.MultipartUploadRequest;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
 import io.juneqqq.pojo.dto.response.MultipartUploadCreateResponse;
@@ -64,7 +64,7 @@ public class FileController {
         response.setCharacterEncoding("utf-8");
 //        // 设置强制下载不打开
         // res.setContentType("application/force-download");
-        String size = stringRedisTemplate.opsForValue().get(CacheConstant.FILE_SIZE_CACHE_NAME + hash);
+        String size = stringRedisTemplate.opsForValue().get(CacheConstant.FILE_SIZE + hash);
         if (size != null) response.setHeader("Content-Length", size);
         fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
         response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);
@@ -79,7 +79,7 @@ public class FileController {
         }
         // >=10M才有保存的必要
         if (size == null && total >= 1024 * 1024 * 10)
-            stringRedisTemplate.opsForValue().set(CacheConstant.FILE_SIZE_CACHE_NAME + hash, String.valueOf(total));
+            stringRedisTemplate.opsForValue().set(CacheConstant.FILE_SIZE + hash, String.valueOf(total));
         is.close();
         return R.ok();
     }

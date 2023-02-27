@@ -1,7 +1,7 @@
 package io.juneqqq;
 
 import com.alibaba.fastjson.JSONObject;
-import io.juneqqq.dao.entity.UserMoment;
+import io.juneqqq.pojo.dao.entity.UserMoment;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

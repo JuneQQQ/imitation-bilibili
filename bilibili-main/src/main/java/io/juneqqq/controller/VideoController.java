@@ -5,15 +5,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson2.JSON;
 import io.juneqqq.core.auth.auth.ApiRouterConstant;
 import io.juneqqq.core.auth.auth.UserHolder;
+import io.juneqqq.pojo.dao.entity.*;
 import io.juneqqq.pojo.dto.PageResult;
 import io.juneqqq.service.common.SearchService;
 import io.juneqqq.service.common.VideoService;
 
-import io.juneqqq.util.UserSupport;
-import io.juneqqq.dao.entity.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
@@ -36,8 +34,6 @@ public class VideoController {
     private VideoService videoService;
 
     @Resource
-    private UserSupport userSupport;
-    @Resource
     private SearchService elasticSearchService;
 
     /**
@@ -48,7 +44,6 @@ public class VideoController {
         video.setUserId(UserHolder.getUserId());
         video.setCreateTime(LocalDateTime.now());
         video.setUpdateTime(LocalDateTime.now());
-
         videoService.addVideos(video);
 //        elasticSearchService.addVideo(video); // async
         return R.ok(video.getId().toString());

@@ -1,6 +1,6 @@
 package io.juneqqq.service.common;
 
-import io.juneqqq.dao.entity.UserMoment;
+import io.juneqqq.pojo.dao.entity.UserMoment;
 
 import java.util.List;
 import java.util.Set;

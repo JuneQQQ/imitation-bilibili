@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
-import io.juneqqq.dao.mapper.UserMomentsMapper;
-import io.juneqqq.constant.CacheConstant;
+import io.juneqqq.pojo.dao.mapper.UserMomentsMapper;
+import io.juneqqq.cache.CacheConstant;
 import io.juneqqq.constant.RocketMQConstant;
-import io.juneqqq.dao.entity.UserMoment;
+import io.juneqqq.pojo.dao.entity.UserMoment;
 import io.juneqqq.service.common.UserMomentService;
 import io.juneqqq.util.RocketMQUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +63,7 @@ public class UserMomentsServiceImpl implements UserMomentService {
     }
 
     public Set<UserMoment> getUserSubscribedMoments(Long userId) {
-        String key = CacheConstant.USER_SUBSCRIBED_CACHE_NAME + userId;
+        String key = CacheConstant.USER_SUBSCRIBED + userId;
         log.debug("key:" + key);
         // 从redis拿取所有我订阅的动态
         Set<String> members = stringRedisTemplate.opsForSet().members(key);

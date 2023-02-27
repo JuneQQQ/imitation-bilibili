@@ -1,8 +1,8 @@
 package io.juneqqq.service.common.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.juneqqq.dao.mapper.FollowingGroupMapper;
-import io.juneqqq.dao.entity.FollowingGroup;
+import io.juneqqq.pojo.dao.mapper.FollowingGroupMapper;
+import io.juneqqq.pojo.dao.entity.FollowingGroup;
 import io.juneqqq.service.common.FollowingGroupService;
 import org.springframework.stereotype.Service;
 

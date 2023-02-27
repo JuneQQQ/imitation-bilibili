@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="io.juneqqq.dao.mapper.VideoMapper">
+<mapper namespace="io.juneqqq.pojo.dao.mapper.VideoMapper">
 
-    <insert id="addVideos" parameterType="io.juneqqq.dao.entity.Video" useGeneratedKeys="true" keyProperty="id">
+    <insert id="addVideos" parameterType="io.juneqqq.pojo.dao.entity.Video" useGeneratedKeys="true" keyProperty="id">
         insert into t_video(id,
                             userId,
                             url,
@@ -53,7 +53,7 @@
         </if>
     </select>
 
-    <select id="pageListVideos" parameterType="java.util.Map" resultType="io.juneqqq.dao.entity.Video">
+    <select id="pageListVideos" parameterType="java.util.Map" resultType="io.juneqqq.pojo.dao.entity.Video">
         select
         *
         from
@@ -67,13 +67,13 @@
         limit #{start}, #{limit}
     </select>
 
-    <select id="getVideoById" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.Video">
+    <select id="getVideoById" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.Video">
         select *
         from t_video
         where id = #{id}
     </select>
 
-    <insert id="addVideoLike" parameterType="io.juneqqq.dao.entity.VideoLike">
+    <insert id="addVideoLike" parameterType="io.juneqqq.pojo.dao.entity.VideoLike">
         insert into t_video_like(userId,
                                  videoId,
                                  createTime)
@@ -90,7 +90,7 @@
     </delete>
 
 
-    <select id="getVideoLikeByVideoIdAndUserId" resultType="io.juneqqq.dao.entity.VideoLike">
+    <select id="getVideoLikeByVideoIdAndUserId" resultType="io.juneqqq.pojo.dao.entity.VideoLike">
         select *
         from t_video_like
         where videoId = #{videoId}
@@ -98,7 +98,7 @@
     </select>
 
 
-    <insert id="addVideoCollection" parameterType="io.juneqqq.dao.entity.VideoCollection">
+    <insert id="addVideoCollection" parameterType="io.juneqqq.pojo.dao.entity.VideoCollection">
         insert into t_video_collection(userId,
                                        videoId,
                                        groupId,
@@ -117,21 +117,21 @@
     </delete>
 
 
-    <select id="getVideoCollectionByVideoIdAndUserId" resultType="io.juneqqq.dao.entity.VideoCollection">
+    <select id="getVideoCollectionByVideoIdAndUserId" resultType="io.juneqqq.pojo.dao.entity.VideoCollection">
         select *
         from t_video_collection
         where videoId = #{videoId}
           and userId = #{userId}
     </select>
 
-    <select id="getVideoCoinByVideoIdAndUserId" resultType="io.juneqqq.dao.entity.VideoCoin">
+    <select id="getVideoCoinByVideoIdAndUserId" resultType="io.juneqqq.pojo.dao.entity.VideoCoin">
         select *
         from t_video_coin
         where videoId = #{videoId}
           and userId = #{userId}
     </select>
 
-    <insert id="addVideoCoin" parameterType="io.juneqqq.dao.entity.VideoCoin">
+    <insert id="addVideoCoin" parameterType="io.juneqqq.pojo.dao.entity.VideoCoin">
         insert into t_video_coin(userId,
                                  videoId,
                                  amount,
@@ -142,7 +142,7 @@
                 #{createTime})
     </insert>
 
-    <update id="updateVideoCoin" parameterType="io.juneqqq.dao.entity.VideoCoin">
+    <update id="updateVideoCoin" parameterType="io.juneqqq.pojo.dao.entity.VideoCoin">
         update
             t_video_coin
         set amount     = #{amount},
@@ -157,7 +157,7 @@
         where videoId = #{videoId}
     </select>
 
-    <insert id="addVideoComment" parameterType="io.juneqqq.dao.entity.VideoComment">
+    <insert id="addVideoComment" parameterType="io.juneqqq.pojo.dao.entity.VideoComment">
         insert into t_video_comment(videoId,
                                     userId,
                                     comment,
@@ -179,7 +179,7 @@
           and rootId is null
     </select>
 
-    <select id="pageListVideoComments" parameterType="java.util.Map" resultType="io.juneqqq.dao.entity.VideoComment">
+    <select id="pageListVideoComments" parameterType="java.util.Map" resultType="io.juneqqq.pojo.dao.entity.VideoComment">
         select *
         from t_video_comment
         where videoId = #{videoId}
@@ -189,7 +189,7 @@
     </select>
 
     <select id="batchGetVideoCommentsByRootIds" parameterType="java.util.List"
-            resultType="io.juneqqq.dao.entity.VideoComment">
+            resultType="io.juneqqq.pojo.dao.entity.VideoComment">
         select
         *
         from
@@ -202,13 +202,13 @@
         order by id
     </select>
 
-    <select id="getVideoDetails" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.Video">
+    <select id="getVideoDetails" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.Video">
         select *
         from t_video
         where id = #{id}
     </select>
 
-    <insert id="addVideoView" parameterType="io.juneqqq.dao.entity.VideoView">
+    <insert id="addVideoView" parameterType="io.juneqqq.pojo.dao.entity.VideoView">
         insert into t_video_view(videoId,
                                  userId,
                                  clientId,
@@ -229,7 +229,7 @@
         where videoId = #{videoId}
     </select>
 
-    <select id="getVideoView" parameterType="java.util.Map" resultType="io.juneqqq.dao.entity.VideoView">
+    <select id="getVideoView" parameterType="java.util.Map" resultType="io.juneqqq.pojo.dao.entity.VideoView">
         select
         *
         from
@@ -263,7 +263,7 @@
         group by userId, videoId
     </select>
 
-    <select id="batchGetVideosByIds" resultType="io.juneqqq.dao.entity.Video">
+    <select id="batchGetVideosByIds" resultType="io.juneqqq.pojo.dao.entity.Video">
         select
         *
         from
@@ -307,7 +307,7 @@
     </select>
 
     <select id="getVideoBinaryImages" parameterType="java.util.Map"
-            resultType="io.juneqqq.dao.entity.VideoBinaryPicture">
+            resultType="io.juneqqq.pojo.dao.entity.VideoBinaryPicture">
         select
         *
         from
@@ -322,7 +322,7 @@
         </if>
     </select>
 
-    <select id="getVideoTagsByVideoId" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.VideoTag">
+    <select id="getVideoTagsByVideoId" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.VideoTag">
         select tvt.videoId,
                tvt.tagId,
                tt.name tagName

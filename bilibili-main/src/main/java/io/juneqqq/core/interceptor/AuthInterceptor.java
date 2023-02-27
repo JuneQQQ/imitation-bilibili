@@ -6,7 +6,7 @@ import io.juneqqq.core.auth.auth.AuthStrategy;
 import io.juneqqq.core.auth.auth.SystemConfigConstant;
 import io.juneqqq.core.auth.auth.UserHolder;
 import io.juneqqq.core.exception.BusinessException;
-import io.juneqqq.dao.entity.R;
+import io.juneqqq.pojo.dao.entity.R;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

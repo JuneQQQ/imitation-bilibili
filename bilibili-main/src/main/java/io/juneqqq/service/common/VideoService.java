@@ -1,8 +1,8 @@
 package io.juneqqq.service.common;
 
+import io.juneqqq.pojo.dao.entity.*;
 import io.juneqqq.pojo.dto.PageResult;
-import io.juneqqq.dao.entity.*;
-import io.juneqqq.dao.repository.esmodel.EsVideoDto;
+import io.juneqqq.pojo.dao.repository.esmodel.EsVideoDto;
 import io.juneqqq.pojo.dto.database.VideoLCC;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

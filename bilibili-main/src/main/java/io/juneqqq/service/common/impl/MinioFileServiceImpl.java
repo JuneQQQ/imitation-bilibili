@@ -6,11 +6,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.juneqqq.config.PearlMinioClient;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
-import io.juneqqq.dao.mapper.FileInfoMapper;
+import io.juneqqq.pojo.dao.mapper.FileInfoMapper;
 import io.juneqqq.pojo.dto.request.MultipartUploadCreate;
 import io.juneqqq.constant.FileStatusEnum;
-import io.juneqqq.constant.CacheConstant;
-import io.juneqqq.dao.entity.FileInfo;
+import io.juneqqq.cache.CacheConstant;
+import io.juneqqq.pojo.dao.entity.FileInfo;
 import io.juneqqq.pojo.dto.request.MultipartUploadRequest;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
 import io.juneqqq.pojo.dto.response.MultipartUploadCreateResponse;
@@ -19,7 +19,7 @@ import io.juneqqq.pojo.vo.ListObjectVo;
 import io.juneqqq.service.common.FileService;
 import io.juneqqq.util.MinioHelper;
 import io.minio.*;
-import io.minio.errors.InsufficientDataException;
+import io.minio.errors.*;
 import io.minio.http.Method;
 import io.minio.messages.Item;
 import io.minio.messages.Part;
@@ -37,12 +37,10 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static io.juneqqq.core.exception.ErrorCodeEnum.MINIO_FILE_IO_ERROR;
 import static io.juneqqq.core.exception.ErrorCodeEnum.MINIO_UNKNOW_EXCEPTION;
 
 
@@ -151,6 +149,8 @@ public class MinioFileServiceImpl implements FileService {
             }
             case FILE_NOT_EXISTS -> {
                 // 前端上传完整分片
+                checkBucket(mur.getBucket());
+
                 String uploadId = getUploadId(mur);
                 mur.setUploadId(uploadId);
                 List<MultipartUploadCreateResponse.ChunkInfo> chunksInfo
@@ -163,6 +163,17 @@ public class MinioFileServiceImpl implements FileService {
             }
         }
         throw new BusinessException(ErrorCodeEnum.MINIO_UNKNOW_EXCEPTION);
+    }
+
+    @SneakyThrows
+    private void checkBucket(String bucket) {
+        if (Boolean.FALSE.equals(client.bucketExists(BucketExistsArgs.builder()
+                .bucket(bucket)
+                .build()).get())) {
+            client.makeBucket(MakeBucketArgs.builder()
+                    .bucket(bucket)
+                    .build());
+        }
     }
 
     @SneakyThrows
@@ -208,7 +219,7 @@ public class MinioFileServiceImpl implements FileService {
         log.debug("创建分片上传开始, createRequest: [{}]", mur);
         // 构建响应
         List<MultipartUploadCreateResponse.ChunkInfo> chunks = new ArrayList<>();
-        stringRedisTemplate.opsForValue().set(CacheConstant.FILE_FINAL_CACHE_NAME + mur.getHash(), mur.getUploadId(), Duration.ofDays(1));
+        stringRedisTemplate.opsForValue().set(CacheConstant.FILE_FINAL + mur.getHash(), mur.getUploadId(), Duration.ofDays(1));
 
         // 文件预上传请求参数 getPresignedObjectUrl
         Map<String, String> reqParams = new HashMap<>();
@@ -240,7 +251,7 @@ public class MinioFileServiceImpl implements FileService {
         FileStatus fs = new FileStatus();
 
         CompletableFuture<Void> l1 = CompletableFuture.runAsync(() -> {
-            String uploadId = stringRedisTemplate.opsForValue().get(CacheConstant.FILE_FINAL_CACHE_NAME + mur.getHash());
+            String uploadId = stringRedisTemplate.opsForValue().get(CacheConstant.FILE_FINAL + mur.getHash());
             ListPartsResponse lpr = null;
             List<Integer> list = new ArrayList<>();
             for (int i = 1; i <= mur.getChunkSize(); i++) list.add(i);
@@ -284,12 +295,19 @@ public class MinioFileServiceImpl implements FileService {
         }, executor);
 
         Result<Item> item = CompletableFuture.supplyAsync(() -> {
-            Iterator<Result<Item>> iterator = client.listObjects(ListObjectsArgs.builder().
-                    bucket(mur.getBucket()).
-                    prefix(mur.getHash()).build()).iterator();
+            Iterator<Result<Item>> iterator = client.listObjects(
+                    ListObjectsArgs.builder().
+                            bucket(mur.getBucket()).
+                            prefix(mur.getHash()).build()).iterator();
             Result<Item> next;
             if (iterator.hasNext()) {
                 next = iterator.next();
+                try {
+                    next.get();
+                } catch (Exception e) {
+                    fs.setStatus(FileStatusEnum.FILE_NOT_EXISTS);
+                    return next;
+                }
                 if (iterator.hasNext()) {
                     log.error("为什么这里根据hash查出来了不止一个文件？bucket:{};hash:{}",
                             mur.getBucket(), mur.getHash());

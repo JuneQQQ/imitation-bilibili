@@ -1,13 +1,11 @@
 package io.juneqqq.core.exception;
 
 
-import io.juneqqq.dao.entity.R;
+import io.juneqqq.pojo.dao.entity.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 @Slf4j

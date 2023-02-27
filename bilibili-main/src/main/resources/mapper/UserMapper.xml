@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="io.juneqqq.dao.mapper.UserMapper">
+<mapper namespace="io.juneqqq.pojo.dao.mapper.UserMapper">
 
-    <select id="getUserByPhone" parameterType="java.lang.String" resultType="io.juneqqq.dao.entity.User">
+    <select id="getUserByPhone" parameterType="java.lang.String" resultType="io.juneqqq.pojo.dao.entity.User">
         select *
         from t_user
         where phone = #{phone}
@@ -13,7 +13,7 @@
     <!--
            useGeneratedKeys + keyProperty =  返回插入主键
     -->
-    <insert id="addUser" parameterType="io.juneqqq.dao.entity.User" useGeneratedKeys="true" keyProperty="id">
+    <insert id="addUser" parameterType="io.juneqqq.pojo.dao.entity.User" useGeneratedKeys="true" keyProperty="id">
         insert into t_user(phone,
                            email,
                            password,
@@ -24,7 +24,7 @@
                 #{salt})
     </insert>
 
-    <insert id="addUserInfo" parameterType="io.juneqqq.dao.entity.UserInfo">
+    <insert id="addUserInfo" parameterType="io.juneqqq.pojo.dao.entity.UserInfo">
         insert into t_user_info(userId,
                                 nick,
                                 avatar,
@@ -39,19 +39,19 @@
                 #{birth})
     </insert>
 
-    <select id="getUserById" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.User">
+    <select id="getUserById" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.User">
         select *
         from t_user
         where id = #{id}
     </select>
 
-    <select id="getUserInfoByUserId" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.UserInfo">
+    <select id="getUserInfoByUserId" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.UserInfo">
         select *
         from t_user_info
         where userId = #{userId}
     </select>
 
-    <update id="updateUsers" parameterType="io.juneqqq.dao.entity.User">
+    <update id="updateUsers" parameterType="io.juneqqq.pojo.dao.entity.User">
         update
         t_user
         set
@@ -69,14 +69,14 @@
         id = #{id}
     </update>
 
-    <select id="getUserByPhoneOrEmail" parameterType="java.lang.String" resultType="io.juneqqq.dao.entity.User">
+    <select id="getUserByPhoneOrEmail" parameterType="java.lang.String" resultType="io.juneqqq.pojo.dao.entity.User">
         select *
         from t_user
         where phone = #{phone}
            or email = #{email}
     </select>
 
-    <update id="updateUserInfos" parameterType="io.juneqqq.dao.entity.UserInfo">
+    <update id="updateUserInfos" parameterType="io.juneqqq.pojo.dao.entity.UserInfo">
         update
         t_user_info
         set
@@ -100,7 +100,7 @@
         userId = #{userId}
     </update>
 
-    <select id="getUserInfoByUserIds" resultType="io.juneqqq.dao.entity.UserInfo">
+    <select id="getUserInfoByUserIds" resultType="io.juneqqq.pojo.dao.entity.UserInfo">
         select
         *
         from
@@ -127,7 +127,7 @@
         </if>
     </select>
 
-    <select id="pageListUserInfos" parameterType="java.util.Map" resultType="io.juneqqq.dao.entity.UserInfo">
+    <select id="pageListUserInfos" parameterType="java.util.Map" resultType="io.juneqqq.pojo.dao.entity.UserInfo">
         select
         *
         from
@@ -165,7 +165,7 @@
     </insert>
 
     <select id="getRefreshTokenDetail" parameterType="java.lang.String"
-            resultType="io.juneqqq.dao.entity.RefreshTokenDetail">
+            resultType="io.juneqqq.pojo.dao.entity.RefreshTokenDetail">
         select *
         from t_refresh_token
         where refreshToken = #{refreshToken}
@@ -177,7 +177,7 @@
         where userId = #{userId}
     </select>
 
-    <select id="batchGetUserInfoByUserIds" resultType="io.juneqqq.dao.entity.UserInfo">
+    <select id="batchGetUserInfoByUserIds" resultType="io.juneqqq.pojo.dao.entity.UserInfo">
         select
         *
         from

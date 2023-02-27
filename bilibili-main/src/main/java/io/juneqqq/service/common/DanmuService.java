@@ -1,6 +1,6 @@
 package io.juneqqq.service.common;
 
-import io.juneqqq.dao.entity.Danmu;
+import io.juneqqq.pojo.dao.entity.Danmu;
 
 import java.util.List;
 

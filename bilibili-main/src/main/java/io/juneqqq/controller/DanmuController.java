@@ -2,11 +2,9 @@ package io.juneqqq.controller;
 
 
 import io.juneqqq.core.auth.auth.ApiRouterConstant;
-import io.juneqqq.core.auth.auth.UserHolder;
-import io.juneqqq.dao.entity.Danmu;
-import io.juneqqq.dao.entity.R;
+import io.juneqqq.pojo.dao.entity.Danmu;
+import io.juneqqq.pojo.dao.entity.R;
 import io.juneqqq.service.common.DanmuService;
-import io.juneqqq.util.UserSupport;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +29,6 @@ public class DanmuController {
     public R<List<Danmu>> getDanmus(@RequestParam Long videoId,
                                     String startTime,
                                     String endTime) {
-
 
         List<Danmu> list = danmuService.getDanmus(videoId, startTime, endTime);
         return R.ok(list);

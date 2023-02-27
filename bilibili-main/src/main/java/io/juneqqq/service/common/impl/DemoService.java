@@ -1,6 +1,6 @@
 package io.juneqqq.service.common.impl;
 
-import io.juneqqq.dao.mapper.DemoMapper;
+import io.juneqqq.pojo.dao.mapper.DemoMapper;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;

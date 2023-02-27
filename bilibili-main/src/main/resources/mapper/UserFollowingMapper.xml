@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="io.juneqqq.dao.mapper.UserFollowingMapper">
+<mapper namespace="io.juneqqq.pojo.dao.mapper.UserFollowingMapper">
 
     <delete id="deleteUserFollowing">
         delete from
@@ -11,7 +11,7 @@
             userId = #{userId} and followingId = #{followingId}
     </delete>
 
-    <insert id="addUserFollowing" parameterType="io.juneqqq.dao.entity.UserFollowing">
+    <insert id="addUserFollowing" parameterType="io.juneqqq.pojo.dao.entity.UserFollowing">
         insert into
             t_user_following(
                 userId,
@@ -24,7 +24,7 @@
             )
     </insert>
 
-    <select id="getUserFollowings" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.UserFollowing">
+    <select id="getUserFollowings" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.UserFollowing">
         select
             *
         from
@@ -33,7 +33,7 @@
             userId = #{userId}
     </select>
 
-    <select id="getUserFans" parameterType="java.lang.Long" resultType="io.juneqqq.dao.entity.UserFollowing">
+    <select id="getUserFans" parameterType="java.lang.Long" resultType="io.juneqqq.pojo.dao.entity.UserFollowing">
         select
             *
         from

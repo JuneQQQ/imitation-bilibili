@@ -1,5 +1,6 @@
 package io.juneqqq;
 
+import com.alicp.jetcache.anno.config.EnableMethodCache;
 import io.juneqqq.service.websocket.WebSocketService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -23,13 +24,16 @@ import java.util.Optional;
 @EnableScheduling
 @EnableCaching
 @Slf4j
+@EnableMethodCache(basePackages = "io.juneqqq")
 public class ApiBilibiliApp {
     public static void main(String[] args) {
         ApplicationContext app = SpringApplication.run(ApiBilibiliApp.class, args);
         WebSocketService.exposeApplicationContext(app);
         Environment environment = app.getBean(Environment.class);
-        log.debug("Swagger 访问链接：http://localhost:" + environment.getProperty("server.port") +
+        String port = environment.getProperty("server.port") == null ? "8080" : environment.getProperty("server.port");
+        log.info("Swagger 访问链接：http://localhost:" + port +
                 Optional.ofNullable(environment.getProperty("server.servlet.context-path")).orElse("") + "/swagger-ui.html");
+        log.info("SpringBoot启动地址：http://127.0.0.1:" + port);
     }
 
     // Tomcat8以上不允许出现特殊字符，这里做兼容性处理

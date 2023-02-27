@@ -1,16 +1,13 @@
 package io.juneqqq.util;
 
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import io.juneqqq.cache.UserInfoCacheManager;
-import io.juneqqq.constant.CacheConstant;
+import io.juneqqq.cache.CacheConstant;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Cache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -83,7 +80,7 @@ public class JwtUtils {
         } catch (ExpiredJwtException e) {
             // 已过期，查询Redis
             // 查询并设置ttl
-            String userId = Optional.ofNullable(stringRedisTemplate.opsForValue().getAndExpire(CacheConstant.USER_REFRESH_TOKEN_CACHE_NAME + ":" + token, (long) 60 * 5, TimeUnit.SECONDS))
+            String userId = Optional.ofNullable(stringRedisTemplate.opsForValue().getAndExpire(CacheConstant.USER_REFRESH_TOKEN + ":" + token, (long) 60 * 5, TimeUnit.SECONDS))
                     .orElseThrow(() -> new BusinessException(ErrorCodeEnum.USER_LOGIN_EXPIRED));
             return Long.valueOf(userId);
         } catch (JwtException e) {

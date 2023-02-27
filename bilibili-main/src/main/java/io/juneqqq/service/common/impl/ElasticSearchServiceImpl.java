@@ -20,10 +20,10 @@ import io.juneqqq.pojo.dto.PageResult;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
 
-import io.juneqqq.dao.repository.UserInfoDtoRepository;
-import io.juneqqq.dao.repository.VideoDtoRepository;
-import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
-import io.juneqqq.dao.repository.esmodel.EsVideoDto;
+import io.juneqqq.pojo.dao.repository.UserInfoDtoRepository;
+import io.juneqqq.pojo.dao.repository.VideoDtoRepository;
+import io.juneqqq.pojo.dao.repository.esmodel.EsUserInfoDto;
+import io.juneqqq.pojo.dao.repository.esmodel.EsVideoDto;
 import io.juneqqq.pojo.dto.request.elasticsearch.UserSearchCondition;
 import io.juneqqq.pojo.dto.request.elasticsearch.VideoSearchCondition;
 import io.juneqqq.pojo.dto.response.elasticsearch.UserSearchResult;
@@ -93,7 +93,7 @@ public class ElasticSearchServiceImpl implements SearchService {
             log.debug("es response:" + response.toString());
             return buildSearchResult(response, condition);
         } catch (IOException e) {
-            log.error("检索异常，异常信息：{}",e.getMessage());
+            log.error("检索异常，异常信息：{}", e.getMessage());
             throw new BusinessException(ErrorCodeEnum.SEARCH_ERROR);
         }
     }
@@ -151,6 +151,7 @@ public class ElasticSearchServiceImpl implements SearchService {
     }
 
     private static void buildSortCondition(String[] field, Boolean[] isAsc, SearchRequest.Builder searchBuilder) {
+        if (field == null || isAsc == null) return;
         assert field.length == isAsc.length;
         // 排序
         for (int i = 0; i < field.length; i++) {
@@ -191,7 +192,7 @@ public class ElasticSearchServiceImpl implements SearchService {
             log.debug("es response:" + response.toString());
             return buildSearchResult(response, condition);
         } catch (IOException e) {
-            log.error("es搜索异常，异常信息：{}",e.getMessage());
+            log.error("es搜索异常，异常信息：{}", e.getMessage());
             throw new BusinessException(ErrorCodeEnum.SEARCH_ERROR);
         }
     }

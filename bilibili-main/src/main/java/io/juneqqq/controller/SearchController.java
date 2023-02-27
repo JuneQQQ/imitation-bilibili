@@ -3,7 +3,7 @@ package io.juneqqq.controller;
 
 import io.juneqqq.core.auth.auth.ApiRouterConstant;
 import io.juneqqq.pojo.dto.PageResult;
-import io.juneqqq.dao.entity.R;
+import io.juneqqq.pojo.dao.entity.R;
 import io.juneqqq.pojo.dto.request.elasticsearch.UserSearchCondition;
 import io.juneqqq.pojo.dto.request.elasticsearch.VideoSearchCondition;
 import io.juneqqq.pojo.dto.response.elasticsearch.UserSearchResult;

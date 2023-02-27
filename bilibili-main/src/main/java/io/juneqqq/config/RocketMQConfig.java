@@ -2,10 +2,10 @@ package io.juneqqq.config;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson2.JSONObject;
-import io.juneqqq.constant.CacheConstant;
+import io.juneqqq.cache.CacheConstant;
 import io.juneqqq.constant.RocketMQConstant;
-import io.juneqqq.dao.entity.UserFollowing;
-import io.juneqqq.dao.entity.UserMoment;
+import io.juneqqq.pojo.dao.entity.UserFollowing;
+import io.juneqqq.pojo.dao.entity.UserMoment;
 import io.juneqqq.service.common.UserFollowingService;
 import io.juneqqq.service.websocket.WebSocketService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,24 +48,24 @@ public class RocketMQConfig {
         return producer;
     }
 
-    @Bean
-    public DefaultMQPushConsumer testConsumer() throws Exception {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(RocketMQConstant.GROUP_TEST);
-        consumer.setNamesrvAddr(nameServerAddr);
-        consumer.subscribe(RocketMQConstant.TOPIC_TEST, "*");
-        consumer.registerMessageListener(new MessageListenerConcurrently() {
-            @Override
-            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages, ConsumeConcurrentlyContext context) {
-                log.info(RocketMQConstant.GROUP_TEST + "收到消息：" + messages);
-                for (MessageExt message : messages) {
-                    log.info(Arrays.toString(message.getBody()));
-                }
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-        });
-        consumer.start();
-        return consumer;
-    }
+//    @Bean
+//    public DefaultMQPushConsumer testConsumer() throws Exception {
+//        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(RocketMQConstant.GROUP_TEST);
+//        consumer.setNamesrvAddr(nameServerAddr);
+//        consumer.subscribe(RocketMQConstant.TOPIC_TEST, "*");
+//        consumer.registerMessageListener(new MessageListenerConcurrently() {
+//            @Override
+//            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages, ConsumeConcurrentlyContext context) {
+//                log.info(RocketMQConstant.GROUP_TEST + "收到消息：" + messages);
+//                for (MessageExt message : messages) {
+//                    log.info(Arrays.toString(message.getBody()));
+//                }
+//                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+//            }
+//        });
+//        consumer.start();
+//        return consumer;
+//    }
 
 
     @Bean("momentsProducer")
@@ -102,7 +101,7 @@ public class RocketMQConfig {
 
                     for (UserFollowing fan : fanList) {
                         // 给每个粉丝动态列表添加这样一条记录
-                        String key = CacheConstant.USER_SUBSCRIBED_CACHE_NAME + fan.getUserId();
+                        String key = CacheConstant.USER_SUBSCRIBED + fan.getUserId();
                         stringRedisTemplate.opsForSet().add(key, bodyStr);
                     }
                 }, () -> log.warn("收到了一条null消息？messages:" + messages));

@@ -6,19 +6,18 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.juneqqq.cache.UserInfoCacheManager;
-import io.juneqqq.constant.CacheConstant;
+import io.juneqqq.cache.CacheConstant;
 import io.juneqqq.core.auth.auth.SystemConfigConstant;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
-import io.juneqqq.dao.mapper.UserMapper;
-import io.juneqqq.dao.mapper.UserInfoMapper;
+import io.juneqqq.pojo.dao.mapper.UserMapper;
+import io.juneqqq.pojo.dao.mapper.UserInfoMapper;
 import io.juneqqq.constant.UserConstant;
 import io.juneqqq.pojo.dto.PageResult;
-import io.juneqqq.dao.entity.User;
-import io.juneqqq.dao.entity.UserInfo;
-import io.juneqqq.dao.repository.UserInfoDtoRepository;
-import io.juneqqq.dao.repository.VideoDtoRepository;
-import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
+import io.juneqqq.pojo.dao.entity.User;
+import io.juneqqq.pojo.dao.entity.UserInfo;
+import io.juneqqq.pojo.dao.repository.UserInfoDtoRepository;
+import io.juneqqq.pojo.dao.repository.esmodel.EsUserInfoDto;
 import io.juneqqq.pojo.dto.cache.CacheUserInfoDto;
 import io.juneqqq.pojo.dto.request.LoginUserDtoReq;
 import io.juneqqq.pojo.dto.response.LoginUserDtoResp;
@@ -126,7 +125,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void logout(Long userId,String token) {
-        stringRedisTemplate.delete(CacheConstant.USER_REFRESH_TOKEN_CACHE_NAME + ":" + token);
+//        stringRedisTemplate.delete(CacheConstant.USER_REFRESH_TOKEN_CACHE_NAME + ":" + token);
+        userInfoCacheManager.evictUserInfoCacheByUserId(userId);
         // do nothing else
     }
 
@@ -232,7 +232,7 @@ public class UserServiceImpl implements UserService {
         String accessToken = jwtUtils.generateToken(userInfo.getUserId(), SystemConfigConstant.BILIBILI_FRONT_KEY);
         // redis 刷新标识  - ttl 为 token过期时间+5min，保证用户在过期时间附近不会重新登陆
         stringRedisTemplate.opsForValue().set(
-                CacheConstant.USER_REFRESH_TOKEN_CACHE_NAME + ":" + accessToken,
+                CacheConstant.USER_REFRESH_TOKEN + ":" + accessToken,
                 String.valueOf(dbUser.getId()), (long) expire + 60 * 5, TimeUnit.SECONDS);
 
         return new LoginUserDtoResp(

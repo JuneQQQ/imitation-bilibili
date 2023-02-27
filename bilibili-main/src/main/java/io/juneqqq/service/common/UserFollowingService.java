@@ -1,8 +1,8 @@
 package io.juneqqq.service.common;
 
-import io.juneqqq.dao.entity.FollowingGroup;
-import io.juneqqq.dao.entity.UserFollowing;
-import io.juneqqq.dao.entity.UserInfo;
+import io.juneqqq.pojo.dao.entity.FollowingGroup;
+import io.juneqqq.pojo.dao.entity.UserFollowing;
+import io.juneqqq.pojo.dao.entity.UserInfo;
 
 import java.util.List;
 

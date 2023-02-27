@@ -1,6 +1,6 @@
 package io.juneqqq.service.common.impl;
 
-import io.juneqqq.dao.mapper.AuthRoleMapper;
+import io.juneqqq.pojo.dao.mapper.AuthRoleMapper;
 import io.juneqqq.core.auth.AuthRole;
 import io.juneqqq.core.auth.AuthRoleElementOperation;
 import io.juneqqq.core.auth.AuthRoleMenu;

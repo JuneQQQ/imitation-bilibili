@@ -1,5 +1,5 @@
 package io.juneqqq.pojo.dto.cache;
-import io.juneqqq.dao.entity.VideoTag;
+import io.juneqqq.pojo.dao.entity.VideoTag;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

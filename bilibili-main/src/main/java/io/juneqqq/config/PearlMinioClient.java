@@ -42,8 +42,6 @@ public class PearlMinioClient extends MinioAsyncClient {
      * @param headers          消息头
      * @param extraQueryParams 额外查询参数
      */
-
-
     @SneakyThrows
     @Override
     public CreateMultipartUploadResponse createMultipartUpload(String bucketName, String region, String objectName, Multimap<String, String> headers, Multimap<String, String> extraQueryParams){

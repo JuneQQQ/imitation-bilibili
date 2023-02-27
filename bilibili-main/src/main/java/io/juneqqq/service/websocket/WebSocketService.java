@@ -3,7 +3,7 @@ package io.juneqqq.service.websocket;
 import com.alibaba.fastjson2.JSONObject;
 import io.juneqqq.constant.RocketMQConstant;
 import io.juneqqq.core.auth.auth.UserHolder;
-import io.juneqqq.dao.entity.Danmu;
+import io.juneqqq.pojo.dao.entity.Danmu;
 import io.juneqqq.service.common.DanmuService;
 import io.juneqqq.util.RocketMQUtil;
 import io.netty.util.internal.StringUtil;

@@ -1,7 +1,7 @@
 package io.juneqqq.pojo.dto.response.elasticsearch;
 
 
-import io.juneqqq.dao.entity.VideoTag;
+import io.juneqqq.pojo.dao.entity.VideoTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -5,10 +5,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.juneqqq.pojo.dao.entity.*;
+import io.juneqqq.pojo.dao.mapper.*;
 import io.juneqqq.pojo.dto.PageResult;
 import io.juneqqq.core.exception.BusinessException;
 import io.juneqqq.core.exception.ErrorCodeEnum;
-import io.juneqqq.dao.repository.esmodel.EsVideoDto;
+import io.juneqqq.pojo.dao.repository.esmodel.EsVideoDto;
 import io.juneqqq.pojo.dto.UserPreference;
 import io.juneqqq.pojo.dto.database.VideoLCC;
 import io.juneqqq.pojo.dto.response.FileUploadResponse;
@@ -18,8 +20,6 @@ import io.juneqqq.util.ImageUtil;
 import io.juneqqq.util.IpUtil;
 import io.juneqqq.util.MD5Util;
 import eu.bitwalker.useragentutils.UserAgent;
-import io.juneqqq.dao.entity.*;
-import io.juneqqq.dao.mapper.*;
 import io.minio.GetObjectResponse;
 import io.netty.util.internal.StringUtil;
 import jakarta.servlet.ServletOutputStream;
@@ -270,7 +270,7 @@ public class VideoServiceImpl implements VideoService {
         //查询当前登录用户是否拥有足够的硬币
         Integer userCoinsAmount = userService.getCoinAmount(userId);
         userCoinsAmount = userCoinsAmount == null ? 0 : userCoinsAmount;
-        if (amount > userCoinsAmount)  throw new BusinessException(ErrorCodeEnum.COIN_NOT_ENOUGH);
+        if (amount > userCoinsAmount) throw new BusinessException(ErrorCodeEnum.COIN_NOT_ENOUGH);
         // 查询已投
         VideoCoin dbVideoCoin = videoMapper.getVideoCoinByVideoIdAndUserId(videoId, userId);
         // 新增视频投币

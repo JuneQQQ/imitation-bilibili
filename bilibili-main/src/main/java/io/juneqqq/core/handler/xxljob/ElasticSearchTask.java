@@ -10,16 +10,12 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import io.jsonwebtoken.lang.Collections;
 import io.juneqqq.constant.elastic.UserInfoIndex;
 import io.juneqqq.constant.elastic.VideoIndex;
-import io.juneqqq.core.exception.BusinessException;
-import io.juneqqq.core.exception.ErrorCodeEnum;
-import io.juneqqq.dao.repository.esmodel.EsUserInfoDto;
-import io.juneqqq.dao.repository.esmodel.EsVideoDto;
+import io.juneqqq.pojo.dao.repository.esmodel.EsUserInfoDto;
+import io.juneqqq.pojo.dao.repository.esmodel.EsVideoDto;
 import io.juneqqq.service.common.UserService;
 import io.juneqqq.service.common.VideoService;
 import jakarta.annotation.Resource;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
